@@ -1,10 +1,14 @@
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public class TaskManager {
 
-    private ArrayList<Task> tasks;
+    private int nextId = 1;
+    // Можно не инициализировать тут, чтобы при создании класса в конструкторе спрашивалось
+    // с какого id продолжать. Может быть полезно при необходимости перезапуска программу
 
-
+    private HashMap<Integer, Task> tasks;
+    private HashMap<Integer, Epic> epics;
+    private HashMap<Integer, Subtask> subtasks;
 
     /*
     1. Возможность хранить задачи всех типов. Для этого вам нужно выбрать подходящую коллекцию.

@@ -1,80 +1,47 @@
-import java.util.ArrayList;
-import java.util.Objects;
-
 public class Task {
 
-    private final String name;
-    private final int uid;
+    private int id;
+    private String name;
+    private String description; //todo используется ли вообще?
     private Status status;
-    private ArrayList<Subtask> subtasks;
 
-    public Task(String name, Status status) {
-        this.name = name;
-        this.status = status;
-        uid = hashCode();
+
+    public int getId() {
+        return id;
     }
 
-    public Task(String name, Status status, ArrayList<Subtask> subtasks) {
-        this.name = name;
-        this.status = status;
-        this.subtasks = subtasks;
-        uid = hashCode();
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getName() {
         return name;
     }
 
-    public ArrayList<Subtask> getSubtasks() {
-        return subtasks;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public int getUid() {
-        return uid;
+    public String getDescription() {
+        return description;
     }
 
-    public void setStatus(Status status) {
-        this.status = status;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Status getStatus() {
         return status;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Task task = (Task) o;
-        return Objects.equals(name, task.name) && status == task.status;
+    public void setStatus(Status status) {
+        this.status = status;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 17;
-        if (name != null) {
-            hash += name.hashCode();
-        }
-        hash *= 31;
-        if (status != null) {
-            hash += status.hashCode();
-        }
-        return hash;
+    public Task(int id, String name, String description, Status status) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.status = status;
     }
-
-    /*
-        1. Название, кратко описывающее суть задачи (например, «Переезд»).
-        2. Описание, в котором раскрываются детали.
-        3. Уникальный идентификационный номер задачи, по которому её можно будет найти.
-        4. Статус, отображающий её прогресс. Вы будете выделять следующие этапы жизни задачи, используя enum:
-            1. NEW — задача только создана, но к её выполнению ещё не приступили.
-            2. IN_PROGRESS — над задачей ведётся работа.
-            3. DONE — задача выполнена.
-
-        * Для каждой подзадачи известно, в рамках какого эпика она выполняется.
-        * Каждый эпик знает, какие подзадачи в него входят.
-        * Завершение всех подзадач эпика считается завершением эпика.
-
-
-     */
 }
