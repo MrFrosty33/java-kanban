@@ -2,7 +2,7 @@ public class Task {
 
     private int id;
     private String name;
-    private String description; //todo используется ли вообще?
+    private String description;
     private Status status;
 
 
@@ -38,8 +38,8 @@ public class Task {
         this.status = status;
     }
 
-    public Task(int id, String name, String description, Status status) {
-        this.id = id;
+
+    public Task(String name, String description, Status status) {
         this.name = name;
         this.description = description;
         this.status = status;
