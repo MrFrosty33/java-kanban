@@ -51,8 +51,6 @@ public class TaskManager {
      * ----- Subtasks -----
      */
 
-    // узнаю, о каком эпике идёт речь через получение информации от сабтаска.
-    // или же стоит передавать необходимый эпик через параметры метода?
     public void addSubtask(Subtask subtask) {
         subtask.setId(nextId++);
         subtasks.put(subtask.getId(), subtask);
