@@ -5,7 +5,7 @@ import model.*;
 public class Main {
 
     public static void main(String[] args) {
-        TaskManager manager = new TaskManager();
+        InMemoryTaskManager manager = new InMemoryTaskManager();
 
         Task task1 = new Task("Задача 1", "Создать задачу 1", Status.NEW);
         Task task2 = new Task("Задача 2", "Создать задачу 2", Status.NEW);
