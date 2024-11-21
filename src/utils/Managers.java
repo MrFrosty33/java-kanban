@@ -5,7 +5,7 @@ import interfaces.HistoryManager;
 import controllers.InMemoryHistoryManager;
 import interfaces.TaskManager;
 
-public class Managers{
+public abstract class Managers{
 
     public static TaskManager getDefault() {
         return new InMemoryTaskManager();

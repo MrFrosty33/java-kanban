@@ -7,7 +7,6 @@ import java.util.ArrayList;
 
 public class InMemoryHistoryManager implements HistoryManager {
 
-    private int currentHistoryLength = 10;
     private int nextIndexHistory = 0;
     private ArrayList<Task> history = new ArrayList<>(10);
 
@@ -23,13 +22,15 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public void addInHistory(Task task) {
-        if (task != null) {
-            if (nextIndexHistory++ <= currentHistoryLength - 1) {
-                history.add(task);
-            } else {
-                history.removeFirst();
-                history.add(task);
-            }
+        // добавлял отдельную переменную, чтобы в будущем, через неё расширять размер списка истории.
+        // Но если советуете, сделать так, то сделаю так.
+        if (task == null) {
+            return;
+        }
+        history.add(task);
+        if (history.size() > 10) {
+            history.removeFirst();
         }
     }
+
 }
