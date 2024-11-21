@@ -1,14 +1,14 @@
 package utils;
 
+import controllers.InMemoryTaskManager;
 import interfaces.HistoryManager;
 import controllers.InMemoryHistoryManager;
 import interfaces.TaskManager;
 
-public class Managers<T extends TaskManager> {
-    private T manager;
+public class Managers{
 
-    public TaskManager getDefault() {
-        return manager;
+    public static TaskManager getDefault() {
+        return new InMemoryTaskManager();
     }
 
     public static HistoryManager getDefaultHistory() {
