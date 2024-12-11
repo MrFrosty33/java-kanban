@@ -18,40 +18,53 @@ public class InMemoryHistoryManagerTest {
     @BeforeAll
     public static void beforeAll(){
         manager = new InMemoryTaskManager();
-        task1 = new Task("test", "test", Status.NEW);
-        task2 = new Task("test-1", "test-1", Status.NEW);
-        subtask1 = new Subtask("test", "test", Status.NEW, 3);
-        subtask2 = new Subtask("test-1", "test-1", Status.NEW, 4);
-        epic1 = new Epic("test", "test");
-        epic2 = new Epic("test-1", "test-1");
+        task1 = new Task("task1", "id-1", Status.NEW);
+        task2 = new Task("task2", "id-2", Status.NEW);
+        subtask1 = new Subtask("subtask1", "id-3", Status.NEW, 3);
+        subtask2 = new Subtask("subtask2", "id-4", Status.NEW, 4);
+        epic1 = new Epic("epic1", "id-5");
+        epic2 = new Epic("epic2", "id-6");
 
-        manager.addTask(task1); //1
-        manager.addTask(task2); //2
-        manager.addEpic(epic1); //3
-        manager.addEpic(epic2); //4
-        manager.addSubtask(subtask1); //5
-        manager.addSubtask(subtask2); //6
+        manager.addTask(task1);
+        manager.addTask(task2);
+        manager.addEpic(epic1);
+        manager.addEpic(epic2);
+        manager.addSubtask(subtask1);
+        manager.addSubtask(subtask2);
 
     }
 
     @Test
     public void HistoryManagerCanAddTasksInHisHistoryListAngReturnThemByCall(){
         manager.getTask(1);
+        manager.getTask(2);
         manager.getEpic(3);
         manager.getEpic(4);
         manager.getSubtask(6);
         manager.getEpic(4);
-        manager.getEpic(4);
-        manager.getEpic(4);
-        manager.getEpic(4);
-        manager.getEpic(4);
-        manager.getEpic(4);
         manager.getSubtask(6);
         manager.getEpic(3);
         manager.getEpic(4);
+        manager.getTask(1);
 
-        System.out.println(manager.getHistory().getHistory());
+        System.out.println("Список истории просмотра задач" + manager.getHistory().getHistory());
 
         Assertions.assertNotNull(manager.getHistory().getHistory());
+    }
+
+    @Test
+    public void HistoryManagerCanDeleteProperly(){
+        manager.getTask(1);
+        manager.getTask(2);
+        manager.getEpic(3);
+        manager.getEpic(4);
+        manager.getSubtask(6);
+        System.out.println("Список истории просмотра задач до удаления " + manager.getHistory().getHistory());
+
+        manager.getHistory().remove(1);
+        System.out.println("Список после удаления " + manager.getHistory().getHistory());
+
+        Assertions.assertEquals(4, manager.getHistory().getHistory().size());
+
     }
 }

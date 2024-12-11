@@ -1,17 +1,16 @@
 package controllers;
 
 import interfaces.HistoryManager;
+import models.Epic;
 import models.Task;
 import utils.Node;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.LinkedList;
 
 public class InMemoryHistoryManager implements HistoryManager {
 
-    //TODO история должна храниться в LinkedList, сделать класс свой.
     private HandMadeLinkedList<Task> taskList = new HandMadeLinkedList<>();
     private HashMap<Integer, Node<Task>> historyMap = new HashMap<>();
 
@@ -27,40 +26,61 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public void add(Task task) {
-        //TODO что делать, если повторяется просмотр?
-        // Удалять из taskList, или только обновить ссылку на Node в historyMap?
-        if (task == null) {
+        if (task == null)
             return;
+
+        if (historyMap.containsKey(task.getId())) {
+            moveToTail(task);
+        } else {
+            taskList.linkLast(task);
+            historyMap.put(task.getId(), taskList.getTail());
         }
-        taskList.linkLast(task);
-        historyMap.put(task.getId(), taskList.getTail());
     }
 
     @Override
     public void remove(int id) {
-        //TODO тут удаляется за О(1), соответственно только из historyMap удаляется Node
+        final Node<Task> node = historyMap.get(id);
+        removeNode(node);
     }
 
-    public void removeNode(Node<Task> node){
-        //TODO надо ли при этом удалять его из мапы? Чтобы там не хранился уже несуществующий Node
+    public void moveToTail(Task task) {
+        // Этот метод является решением следующей проблемы: если в истории был просмотрен эпик с подзадачами,
+        // то при его удалении и восстановлении последующем в конце списка, удалятся из истории просмотренные подзадачи.
+        final Node<Task> node = historyMap.get(task.getId());
+        historyMap.remove(node.data.getId());
+        taskList.unlink(node);
+        taskList.linkLast(task);
+        historyMap.put(task.getId(), taskList.getTail());
+    }
+
+    public void removeNode(Node<Task> node) {
+        if(node.data instanceof Epic && !((Epic) node.data).getSubtaskIds().isEmpty()){
+            ArrayList<Integer> subtasks = ((Epic) node.data).getSubtaskIds();
+            for (Integer id : subtasks) {
+                remove(id);
+            }
+        }
+
+        historyMap.remove(node.data.getId());
         taskList.unlink(node);
     }
 
     class HandMadeLinkedList<T> {
 
-        private Node<T> head;
-        private Node<T> tail;
-        private int size = 0;
+        Node<T> head;
+        Node<T> tail;
+        int size = 0;
 
-        public Node<T> getHead() {
+        Node<T> getHead() {
             return head;
         }
 
-        public Node<T> getTail() {
+        Node<T> getTail() {
             return tail;
         }
 
-        public void linkLast(T element) {
+
+        void linkLast(T element) {
             final Node<T> oldTail = tail;
             final Node<T> newNode = new Node<>(oldTail, element, null);
             tail = newNode;
@@ -71,7 +91,7 @@ public class InMemoryHistoryManager implements HistoryManager {
             size++;
         }
 
-        public ArrayList<T> getTasks(){
+        ArrayList<T> getTasks() {
             ArrayList<T> result = new ArrayList<>(size);
 
             for (Node<T> x = head; x != null; x = x.next) {
