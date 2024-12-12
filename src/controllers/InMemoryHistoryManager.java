@@ -30,7 +30,7 @@ public class InMemoryHistoryManager implements HistoryManager {
             return;
 
         if (historyMap.containsKey(task.getId())) {
-            moveToTail(task);
+            taskList.moveToTail(historyMap.get(task.getId()));
         } else {
             taskList.linkLast(task);
             historyMap.put(task.getId(), taskList.getTail());
@@ -39,22 +39,14 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public void remove(int id) {
-        final Node<Task> node = historyMap.get(id);
-        removeNode(node);
-    }
-
-    public void moveToTail(Task task) {
-        // Этот метод является решением следующей проблемы: если в истории был просмотрен эпик с подзадачами,
-        // то при его удалении и восстановлении последующем в конце списка, удалятся из истории просмотренные подзадачи.
-        final Node<Task> node = historyMap.get(task.getId());
-        historyMap.remove(node.data.getId());
-        taskList.unlink(node);
-        taskList.linkLast(task);
-        historyMap.put(task.getId(), taskList.getTail());
+        if (historyMap.containsKey(id)) {
+            final Node<Task> node = historyMap.get(id);
+            removeNode(node);
+        }
     }
 
     public void removeNode(Node<Task> node) {
-        if(node.data instanceof Epic && !((Epic) node.data).getSubtaskIds().isEmpty()){
+        if (node.data instanceof Epic && !((Epic) node.data).getSubtaskIds().isEmpty()) {
             ArrayList<Integer> subtasks = ((Epic) node.data).getSubtaskIds();
             for (Integer id : subtasks) {
                 remove(id);
@@ -77,6 +69,26 @@ public class InMemoryHistoryManager implements HistoryManager {
 
         Node<T> getTail() {
             return tail;
+        }
+
+        void moveToTail(Node<T> node) {
+            if (node == tail)
+                return;
+
+            final Node<T> oldTail = tail;
+            oldTail.next = node;
+            tail = node;
+
+            if (node == head) {
+                node.next.prev = null;
+                head = node.next;
+            } else {
+                node.next.prev = node.prev;
+                node.prev.next = node.next;
+            }
+
+            node.prev = oldTail;
+            node.next = null;
         }
 
 

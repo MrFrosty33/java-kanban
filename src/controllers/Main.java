@@ -32,13 +32,13 @@ public class Main {
 
         System.out.println("Удалил Эпик." + manager.getHistory().getHistory());
 
+        manager.getHistory().remove(4);
+
+        System.out.println("Удалил Подзадачу." + manager.getHistory().getHistory());
+
         manager.getHistory().remove(2);
 
         System.out.println("Удалил эпик с 3-мя подзадачами." + manager.getHistory().getHistory());
-
-
-
-
 
     }
 
