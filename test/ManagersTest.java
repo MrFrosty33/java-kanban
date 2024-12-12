@@ -1,5 +1,3 @@
-package tests;
-
 import interfaces.TaskManager;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
