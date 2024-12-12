@@ -10,8 +10,8 @@ import java.util.List;
 
 public class InMemoryHistoryManager implements HistoryManager {
 
-    private HandMadeLinkedList<Task> taskList = new HandMadeLinkedList<>();
-    private HashMap<Integer, Node<Task>> historyMap = new HashMap<>();
+    private HandMadeLinkedList taskList = new HandMadeLinkedList();
+    private HashMap<Integer, Node> historyMap = new HashMap<>();
 
     /**
      * ----- HistoryManager -----
@@ -25,8 +25,7 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public void add(Task task) {
-        if (task == null)
-            return;
+        if (task == null) return;
 
         if (historyMap.containsKey(task.getId())) {
             taskList.moveToTail(historyMap.get(task.getId()));
@@ -39,12 +38,12 @@ public class InMemoryHistoryManager implements HistoryManager {
     @Override
     public void remove(int id) {
         if (historyMap.containsKey(id)) {
-            final Node<Task> node = historyMap.get(id);
+            final Node node = historyMap.get(id);
             removeNode(node);
         }
     }
 
-    public void removeNode(Node<Task> node) {
+    public void removeNode(Node node) {
         if (node.data instanceof Epic && !((Epic) node.data).getSubtaskIds().isEmpty()) {
             ArrayList<Integer> subtasks = ((Epic) node.data).getSubtaskIds();
             for (Integer id : subtasks) {
@@ -60,38 +59,37 @@ public class InMemoryHistoryManager implements HistoryManager {
      * ----- Вложенные классы -----
      */
 
-    class Node<Task> {
+    class Node {
 
         Task data;
-        Node<Task> next;
-        Node<Task> prev;
+        Node next;
+        Node prev;
 
-        Node(Node<Task> prev, Task data, Node<Task> next) {
+        Node(Node prev, Task data, Node next) {
             this.data = data;
             this.next = next;
             this.prev = prev;
         }
     }
 
-    class HandMadeLinkedList<Task> {
+    class HandMadeLinkedList {
 
-        Node<Task> head;
-        Node<Task> tail;
+        Node head;
+        Node tail;
         int size = 0;
 
-        Node<Task> getHead() {
+        Node getHead() {
             return head;
         }
 
-        Node<Task> getTail() {
+        Node getTail() {
             return tail;
         }
 
-        void moveToTail(Node<Task> node) {
-            if (node == tail)
-                return;
+        void moveToTail(Node node) {
+            if (node == tail) return;
 
-            final Node<Task> oldTail = tail;
+            final Node oldTail = tail;
             oldTail.next = node;
             tail = node;
 
@@ -109,30 +107,28 @@ public class InMemoryHistoryManager implements HistoryManager {
 
 
         void linkLast(Task element) {
-            final Node<Task> oldTail = tail;
-            final Node<Task> newNode = new Node<>(oldTail, element, null);
+            final Node oldTail = tail;
+            final Node newNode = new Node(oldTail, element, null);
             tail = newNode;
-            if (oldTail == null)
-                head = newNode;
-            else
-                oldTail.next = newNode;
+            if (oldTail == null) head = newNode;
+            else oldTail.next = newNode;
             size++;
         }
 
         ArrayList<Task> getTasks() {
             ArrayList<Task> result = new ArrayList<>(size);
 
-            for (Node<Task> x = head; x != null; x = x.next) {
+            for (Node x = head; x != null; x = x.next) {
                 result.add(x.data);
             }
 
             return result;
         }
 
-        void unlink(Node<Task> x) {
+        void unlink(Node x) {
             final Task data = x.data;
-            final Node<Task> next = x.next;
-            final Node<Task> prev = x.prev;
+            final Node next = x.next;
+            final Node prev = x.prev;
 
             if (prev == null) {
                 head = next;
