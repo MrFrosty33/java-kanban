@@ -16,7 +16,7 @@ public class InMemoryHistoryManagerTest {
     static Epic epic1, epic2;
 
     @BeforeAll
-    public static void beforeAll(){
+    public static void beforeAll() {
         manager = new InMemoryTaskManager();
         task1 = new Task("task1", "id-1", Status.NEW);
         task2 = new Task("task2", "id-2", Status.NEW);
@@ -35,7 +35,7 @@ public class InMemoryHistoryManagerTest {
     }
 
     @Test
-    public void HistoryManagerCanAddTasksInHisHistoryListAngReturnThemByCall(){
+    public void historyManagerCanAddTasksInHisHistoryListAngReturnThemByCall() {
         manager.getTask(1);
         manager.getTask(2);
         manager.getEpic(3);
@@ -53,7 +53,7 @@ public class InMemoryHistoryManagerTest {
     }
 
     @Test
-    public void HistoryManagerCanDeleteProperly(){
+    public void historyManagerCanDeleteProperly() {
         manager.getTask(1);
         manager.getTask(2);
         manager.getEpic(3);
