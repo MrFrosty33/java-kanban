@@ -1,14 +1,20 @@
 package controllers;
 
+import interfaces.TaskManager;
 import models.Epic;
 import models.Status;
 import models.Subtask;
+
+import java.io.File;
 
 public class Main {
 
     public static void main(String[] args) {
 
-        InMemoryTaskManager manager = getManager();
+        File path = new File("C:\\Programms\\IntelliJ Projects\\Files\\Sprint7\\Final\\sprint7.csv");
+        InMemoryTaskManager manager = new InMemoryTaskManager();
+        FileBackedTaskManager.loadFromFile(path);
+
 
         manager.getEpic(1);
         manager.getSubtask(5);
@@ -28,6 +34,9 @@ public class Main {
 
         System.out.println("Список истории просмотра задач" + manager.getHistory().getHistory());
 
+        FileBackedTaskManager fileManager = new FileBackedTaskManager(path, manager.getHistory());
+        fileManager.save();
+
         manager.getHistory().remove(1);
 
         System.out.println("Удалил Эпик." + manager.getHistory().getHistory());
@@ -39,6 +48,12 @@ public class Main {
         manager.getHistory().remove(2);
 
         System.out.println("Удалил эпик с 3-мя подзадачами." + manager.getHistory().getHistory());
+
+
+
+
+
+
 
     }
 
