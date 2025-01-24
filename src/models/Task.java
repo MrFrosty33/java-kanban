@@ -57,4 +57,18 @@ public class Task {
     public void setStatus(Status status) {
         this.status = status;
     }
+    /**
+     * ----- Print -----
+     */
+
+    @Override
+    public String toString() {
+        String taskClass = this.getClass().getName().substring(7).toUpperCase();
+        String separator = ",";
+        // Всё это, чтобы убрать "class models.XXX" из названия класса
+        String result = getId() + separator + taskClass + separator + getName() + separator
+                + getStatus() + separator + getDescription() + separator;
+
+        return result;
+    }
 }

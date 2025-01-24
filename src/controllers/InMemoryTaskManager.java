@@ -8,7 +8,6 @@ import models.Subtask;
 import models.Task;
 import utils.Managers;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,7 +39,12 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public ArrayList<Task> getAllTasks() {
-        return new ArrayList<>(tasks.values());
+        ArrayList<Task> result = new ArrayList<>(tasks.values());
+        for (Task task : result) {
+            historyManager.add(task);
+        }
+
+        return result;
     }
 
     @Override
@@ -81,7 +85,12 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public ArrayList<Subtask> getAllSubtasks() {
-        return new ArrayList<>(subtasks.values());
+        ArrayList<Subtask> result = new ArrayList<>(subtasks.values());
+        for (Subtask subtask : result) {
+            historyManager.add(subtask);
+        }
+
+        return result;
     }
 
     @Override
@@ -130,7 +139,12 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public ArrayList<Epic> getAllEpics() {
-        return new ArrayList<>(epics.values());
+        ArrayList<Epic> result = new ArrayList<>(epics.values());
+        for (Epic epic : result) {
+            historyManager.add(epic);
+        }
+
+        return result;
     }
 
     @Override

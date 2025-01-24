@@ -7,48 +7,54 @@ import models.Subtask;
 import models.Task;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
 
     private File myFile;
     private HistoryManager history;
+    private InMemoryTaskManager manager;
 
-    public FileBackedTaskManager(File myFile, HistoryManager history) {
-        //TODO убрать этот конструктор
-        // почему-то конструкторы работают только если передавать историю.
-        // Если брать дефолтную, по факту ту же самую - не работает
+    public FileBackedTaskManager(File myFile, InMemoryTaskManager manager) {
+        // Пока не нашёл варианта, как этому классу находить менеджера, кроме как передавать его в конструкторе
         this.myFile = myFile;
-        this.history = history;
+        this.manager = manager;
+        this.history = this.manager.getHistory();
     }
 
+    /*
     public FileBackedTaskManager(File myFile) {
+        // Этот конструктор не видит созданный manager в main, смотрит в super,
+        // а он не существует и создаётся потому заново.
         this.myFile = myFile;
         this.history = super.getHistory();
+    }
+     */
+
+    public static File copyFile(File file) {
+        StringBuilder copy = new StringBuilder(file.getPath());
+        copy.insert(copy.lastIndexOf(".csv"), "_Copy");
+        Path copyPath = Path.of(copy.toString());
+        try {
+            Files.copy(file.toPath(), copyPath, StandardCopyOption.REPLACE_EXISTING);
+        } catch (Throwable ex) {
+            ex.printStackTrace();
+        }
+        return copyPath.toFile();
     }
 
     public void save() {
         // Пример сохранения в CSV: id,type,name,status,description,epic
         try (FileWriter fw = new FileWriter(myFile); BufferedWriter bw = new BufferedWriter(fw)) {
             String title = "id,type,name,status,description,epic" + "\n";
-            String separator = ",";
             bw.write(title);
 
             for (Task task : history.getHistory()) {
-                String toWrite;
-                String taskClass = task.getClass().getName().substring(7).toUpperCase();
-                // Всё это, чтобы убрать "class models.XXX" из названия класса
-
-                toWrite = task.getId() + separator;
-                toWrite += taskClass + separator + task.getName() + separator +
-                        task.getStatus() + separator + task.getDescription() + separator;
-
-                if (task.getClass().equals(Subtask.class)) {
-                    Subtask subtask = (Subtask) task;
-                    toWrite += subtask.getEpicId() + separator;
-                }
-
-                bw.write(toWrite + "\n");
+                bw.write(task.toString() + "\n");
             }
 
         } catch (Throwable ex) {
@@ -56,17 +62,21 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
     }
 
-    public static FileBackedTaskManager loadFromFile(File file) {
-        // TODO на данный момент не работает
-        FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(file);
-        try (FileReader fr = new FileReader(file); BufferedReader br = new BufferedReader(fr)) {
-            br.readLine(); // пропускаем первую стоку с оглавлением
+    public static FileBackedTaskManager loadFromFile(File file, InMemoryTaskManager manager) {
+        // Делаю копию, потому что во время чтения файла пропадает вся информация из него.
+        File fileCopy = copyFile(file);
 
+        FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(fileCopy, manager);
+        ArrayList<Task> tasks = new ArrayList<>();
+        ArrayList<Epic> epics = new ArrayList<>();
+        ArrayList<Subtask> subtasks = new ArrayList<>();
+
+        try (FileReader fr = new FileReader(fileCopy); BufferedReader br = new BufferedReader(fr)) {
+            br.readLine(); // пропускаем первую стоку с оглавлением
 
             while (br.ready()) {
                 String next = br.readLine();
                 String[] nextLine = next.split(",");
-                //StringBuilder nextLineBuilder = new StringBuilder(next);
                 Status status;
 
                 if (nextLine[3].equals("NEW")) {
@@ -77,22 +87,36 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     status = Status.IN_PROGRESS;
                 }
 
-                if (nextLine[1].equals("SUBTASK")) {
-                    Subtask subtask = new Subtask(nextLine[2], nextLine[4], status, Integer.valueOf(nextLine[5]));
-                    //name,      descr,    status,       epic id
-                    fileBackedTaskManager.history.add(subtask);
-                } else if (nextLine[1].equals("EPIC")) {
+                if (nextLine[1].equals("EPIC")) {
                     Epic epic = new Epic(nextLine[2], nextLine[4]);
                     //name,      descr
-                    fileBackedTaskManager.history.add(epic);
+                    epics.add(epic);
+                } else if (nextLine[1].equals("SUBTASK")) {
+                    Subtask subtask = new Subtask(nextLine[2], nextLine[4], status, Integer.valueOf(nextLine[5]));
+                    //name,      descr,    status,       epic id
+                    subtasks.add(subtask);
                 } else {
                     Task task = new Task(nextLine[2], nextLine[4]);
                     //name,      descr
-                    fileBackedTaskManager.history.add(task);
+                    tasks.add(task);
                 }
             }
 
+            // сперва надо класть эпики, иначе сабтаскам не к кому прикрепляться
+            for (Task task : tasks) {
+                fileBackedTaskManager.addTask(task);
+            }
+
+            for (Epic epic : epics) {
+                fileBackedTaskManager.addEpic(epic);
+            }
+
+            for (Subtask subtask : subtasks) {
+                fileBackedTaskManager.addSubtask(subtask);
+            }
+
             return fileBackedTaskManager;
+
         } catch (Throwable ex) {
             ex.printStackTrace();
             return fileBackedTaskManager;
