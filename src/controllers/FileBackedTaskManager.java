@@ -1,5 +1,6 @@
 package controllers;
 
+import exceptions.ManagerSaveException;
 import interfaces.HistoryManager;
 import models.Epic;
 import models.Status;
@@ -20,20 +21,16 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     private InMemoryTaskManager manager;
 
     public FileBackedTaskManager(File myFile, InMemoryTaskManager manager) {
-        // Пока не нашёл варианта, как этому классу находить менеджера, кроме как передавать его в конструкторе
         this.myFile = myFile;
         this.manager = manager;
-        this.history = this.manager.getHistory();
+        this.history = manager.getHistory();
     }
 
-    /*
+
     public FileBackedTaskManager(File myFile) {
-        // Этот конструктор не видит созданный manager в main, смотрит в super,
-        // а он не существует и создаётся потому заново.
         this.myFile = myFile;
         this.history = super.getHistory();
     }
-     */
 
     public static File copyFile(File file) {
         StringBuilder copy = new StringBuilder(file.getPath());
@@ -57,8 +54,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 bw.write(task.toString() + "\n");
             }
 
-        } catch (Throwable ex) {
-            ex.printStackTrace();
+        } catch (IOException ex) {
+            throw new ManagerSaveException(ex.getMessage());
         }
     }
 
@@ -66,7 +63,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         // Делаю копию, потому что во время чтения файла пропадает вся информация из него.
         File fileCopy = copyFile(file);
 
-        FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(fileCopy, manager);
+        FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(fileCopy);
         ArrayList<Task> tasks = new ArrayList<>();
         ArrayList<Epic> epics = new ArrayList<>();
         ArrayList<Subtask> subtasks = new ArrayList<>();
@@ -117,11 +114,14 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
             return fileBackedTaskManager;
 
-        } catch (Throwable ex) {
-            ex.printStackTrace();
-            return fileBackedTaskManager;
+        } catch (IOException ex) {
+            throw new ManagerSaveException(ex.getMessage());
         }
     }
+
+    /**
+     * ----- Tasks -----
+     */
 
     @Override
     public void addTask(Task task) {
@@ -130,14 +130,60 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
+    public void updateTask(Task task) {
+        super.updateTask(task);
+        save();
+    }
+
+    @Override
+    public void removeTask(int id) {
+        super.removeTask(id);
+        save();
+    }
+
+    /**
+     * ----- Subtasks -----
+     */
+
+    @Override
     public void addSubtask(Subtask subtask) {
         super.addSubtask(subtask);
         save();
     }
 
     @Override
+    public void updateSubtask(Subtask subtask) {
+        super.updateSubtask(subtask);
+        save();
+    }
+
+    @Override
+    public void removeSubtask(int id) {
+        super.removeSubtask(id);
+        save();
+    }
+
+    /**
+     * ----- Epics -----
+     */
+
+    @Override
     public void addEpic(Epic epic) {
         super.addEpic(epic);
         save();
     }
+
+    @Override
+    public void updateEpic(Epic epic) {
+        super.updateEpic(epic);
+        save();
+    }
+
+    @Override
+    public void removeEpic(int id) {
+        super.removeEpic(id);
+        save();
+    }
+
+
 }

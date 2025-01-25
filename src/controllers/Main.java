@@ -10,7 +10,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        File path = new File("C:\\Programms\\IntelliJ Projects\\Files\\Sprint7\\Final\\sprint7.csv");
+        File path = new File("src/resources/sprint7.csv");
         InMemoryTaskManager manager = FileBackedTaskManager.loadFromFile(path, new InMemoryTaskManager());
         System.out.println("Прошла загрузка из файла: " + manager.toString());
 
@@ -35,20 +35,7 @@ public class Main {
         manager.getSubtask(4);
 
         System.out.println("Список истории просмотра задач" + manager.getHistory().getHistory());
-
         fileManager.save();
-
-        manager.getHistory().remove(1);
-
-        System.out.println("Удалил Эпик." + manager.getHistory().getHistory());
-
-        manager.getHistory().remove(4);
-
-        System.out.println("Удалил Подзадачу." + manager.getHistory().getHistory());
-
-        manager.getHistory().remove(2);
-
-        System.out.println("Удалил эпик с 3-мя подзадачами." + manager.getHistory().getHistory());
 
 
     }
