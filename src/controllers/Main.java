@@ -7,36 +7,11 @@ import models.Subtask;
 import java.io.File;
 
 public class Main {
+    private static final File path = new File("src/resources/sprint7.csv");
 
     public static void main(String[] args) {
-
-        File path = new File("src/resources/sprint7.csv");
-        InMemoryTaskManager manager = FileBackedTaskManager.loadFromFile(path, new InMemoryTaskManager());
-        System.out.println("Прошла загрузка из файла: " + manager.toString());
-
-        //InMemoryTaskManager manager = getManager();
-
-        FileBackedTaskManager fileManager = new FileBackedTaskManager(path, manager);
-
-        manager.getEpic(1);
-        manager.getSubtask(5);
-        manager.getEpic(2);
-        manager.getSubtask(3);
-        manager.getSubtask(4);
-
-        System.out.println("Список истории просмотра задач" + manager.getHistory().getHistory());
-
-        manager.getEpic(1);
-        manager.getEpic(2);
-
-        System.out.println("Список истории просмотра задач" + manager.getHistory().getHistory());
-
-        manager.getEpic(2);
-        manager.getSubtask(4);
-
-        System.out.println("Список истории просмотра задач" + manager.getHistory().getHistory());
-        fileManager.save();
-
+        testLoadAndSave();
+        //testSave(new File("src/resources/test.csv"));
 
     }
 
@@ -58,6 +33,57 @@ public class Main {
         manager.addSubtask(subtask2);
         manager.addSubtask(subtask3);
 
+        manager.getEpic(1);
+        manager.getSubtask(5);
+        manager.getEpic(2);
+        manager.getSubtask(3);
+        manager.getSubtask(4);
+
         return manager;
+    }
+
+    private static void testSave() {
+        InMemoryTaskManager manager = getManager();
+        FileBackedTaskManager fileManager = new FileBackedTaskManager(path, manager);
+        fileManager.save();
+    }
+
+    private static void testSave(File path){
+        InMemoryTaskManager manager = getManager();
+        FileBackedTaskManager fileManager = new FileBackedTaskManager(path, manager);
+        fileManager.save();
+    }
+
+    private static void testLoadAndSave() {
+        InMemoryTaskManager manager;
+
+        if(path.isFile() && path.exists()){
+            manager = FileBackedTaskManager.loadFromFile(path, new InMemoryTaskManager());
+            System.out.println("Прошла загрузка из файла: " + manager.toString());
+        } else {
+            manager = getManager();
+        }
+
+
+        FileBackedTaskManager fileManager = new FileBackedTaskManager(path, manager);
+
+        manager.getEpic(1);
+        manager.getSubtask(5);
+        manager.getEpic(2);
+        manager.getSubtask(3);
+        manager.getSubtask(4);
+
+        System.out.println("Список истории просмотра задач" + manager.getHistory().getHistory());
+
+        manager.getEpic(1);
+        manager.getEpic(2);
+
+        System.out.println("Список истории просмотра задач" + manager.getHistory().getHistory());
+
+        manager.getEpic(2);
+        manager.getSubtask(4);
+
+        System.out.println("Список истории просмотра задач" + manager.getHistory().getHistory());
+        fileManager.save();
     }
 }
