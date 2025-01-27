@@ -61,6 +61,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     public static FileBackedTaskManager loadFromFile(File file, InMemoryTaskManager manager) {
         // Делаю копию, потому что во время чтения файла пропадает вся информация из него.
+        // Таким образом на данный момент пропадают данные из копии, а файл копии в конце удаляю
         File fileCopy = copyFile(file);
 
         FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(fileCopy);
@@ -111,6 +112,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             for (Subtask subtask : subtasks) {
                 fileBackedTaskManager.addSubtask(subtask);
             }
+
+            Files.delete(fileCopy.toPath());
 
             return fileBackedTaskManager;
 
