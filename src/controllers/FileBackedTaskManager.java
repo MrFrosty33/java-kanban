@@ -11,6 +11,9 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 
@@ -45,9 +48,9 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     public void save() {
-        // Пример сохранения в CSV: id,type,name,status,description,epic
+        // Пример сохранения в CSV: id,type,name,status,description,duration,startTime,endTime,epic
         try (FileWriter fw = new FileWriter(myFile); BufferedWriter bw = new BufferedWriter(fw)) {
-            String title = "id,type,name,status,description,epic" + "\n";
+            String title = "id,type,name,status,description,duration,startTime,endTime,epic" + "\n";
             bw.write(title);
 
             for (Task task : history.getHistory()) {
@@ -63,6 +66,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         // Делаю копию, потому что во время чтения файла пропадает вся информация из него.
         // Таким образом на данный момент пропадают данные из копии, а файл копии в конце удаляю
         File fileCopy = copyFile(file);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yy|HH:mm");
 
         FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(fileCopy);
         ArrayList<Task> tasks = new ArrayList<>();
@@ -85,17 +89,29 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     status = Status.IN_PROGRESS;
                 }
 
+                //                  0   1    2    3        4          5         6        7     8
+                // String title = "id,type,name,status,description,duration,startTime,endTime,epic" + "\n";
                 if (nextLine[1].equals("EPIC")) {
-                    Epic epic = new Epic(nextLine[2], nextLine[4]);
-                    //name,      descr
+                    Epic epic = new Epic(nextLine[2], //name
+                            nextLine[4]); //descr
+
                     epics.add(epic);
                 } else if (nextLine[1].equals("SUBTASK")) {
-                    Subtask subtask = new Subtask(nextLine[2], nextLine[4], status, Integer.valueOf(nextLine[5]));
-                    //name,      descr,    status,       epic id
+                    Subtask subtask = new Subtask(nextLine[2], //name
+                            nextLine[4], //descr
+                            status,
+                            Duration.parse(nextLine[5]), //duration
+                            LocalDateTime.parse(nextLine[6], formatter), //startTime
+                            Integer.valueOf(nextLine[8])); //epic id
+
                     subtasks.add(subtask);
                 } else {
-                    Task task = new Task(nextLine[2], nextLine[4]);
-                    //name,      descr
+                    Task task = new Task(nextLine[2], //name
+                            nextLine[4], //descr
+                            status,
+                            Duration.parse(nextLine[5]), //duration
+                            LocalDateTime.parse(nextLine[6], formatter)); //startTime
+
                     tasks.add(task);
                 }
             }
@@ -113,8 +129,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 fileBackedTaskManager.addSubtask(subtask);
             }
 
+            // принудительно закрываю, несмотря на try-with-resources
+            // иначе не может получить к доступу, мол, он ещё используется
+            fr.close();
+            br.close();
             Files.delete(fileCopy.toPath());
-
             return fileBackedTaskManager;
 
         } catch (IOException ex) {

@@ -8,10 +8,7 @@ import models.Subtask;
 import models.Task;
 import utils.Managers;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
 
@@ -27,6 +24,7 @@ public class InMemoryTaskManager implements TaskManager {
         return historyManager;
     }
 
+    //TODO все getPrioritizedTasks, компаратор на каждый тип таска?
     /**
      * ----- Tasks -----
      */
@@ -40,6 +38,12 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public ArrayList<Task> getAllTasks() {
         return new ArrayList<>(tasks.values());
+    }
+
+    public ArrayList<Task> getPrioritizedTasks(){
+        ArrayList<Task> result = new ArrayList<>(tasks.values());
+        //Collections.sort(result);
+        return result;
     }
 
     @Override
@@ -81,6 +85,12 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public ArrayList<Subtask> getAllSubtasks() {
         return new ArrayList<>(subtasks.values());
+    }
+
+    public ArrayList<Subtask> getPrioritizedSubtasks(){
+        ArrayList<Subtask> result = new ArrayList<>(subtasks.values());
+        //Collections.sort(result);
+        return result;
     }
 
     @Override
@@ -130,6 +140,12 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public ArrayList<Epic> getAllEpics() {
         return new ArrayList<>(epics.values());
+    }
+
+    public ArrayList<Epic> getPrioritizedEpics(){
+        ArrayList<Epic> result = new ArrayList<>(epics.values());
+        //Collections.sort(result);
+        return result;
     }
 
     @Override
