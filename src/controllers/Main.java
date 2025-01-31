@@ -16,25 +16,26 @@ public class Main {
         testLoadAndSave();
         //testSave(new File("src/resources/test.csv"));
 
+
         /*
         InMemoryTaskManager manager = getManager();
         ArrayList<Subtask> subtasks = manager.getPrioritizedSubtasks();
-        ArrayList<Epic> epics = manager.getPrioritizedEpics();
+        //ArrayList<Epic> epics = manager.getPrioritizedEpics();
         for (Subtask subtask : subtasks) {
             System.out.println(subtask);
         }
-        for (Epic epic : epics) {
-            System.out.println(epic);
-        }
 
          */
+
+
+
 
     }
 
     private static InMemoryTaskManager getManager() {
         InMemoryTaskManager manager = new InMemoryTaskManager();
-        Epic epicEmpty, epicWithThreeSubtasks;
-        Subtask subtask1, subtask2, subtask3;
+        Epic epicEmpty, epicWithThreeSubtasks, epicNoTime;
+        Subtask subtask1, subtask2, subtask3, subtask4;
         Duration hourThirtyMinutes = Duration.ofHours(1).plusMinutes(30);
         Duration fiveHours = Duration.ofHours(5);
         LocalDateTime longTimeAgo = LocalDateTime.now().minusYears(2).minusWeeks(35).minusMinutes(912);
@@ -42,23 +43,31 @@ public class Main {
         LocalDateTime now = LocalDateTime.now();
 
 
+        // Здесь тоже важно, чтобы эпик добавлялся раньше, чем его сабтаск
         epicEmpty = new Epic("epic1", "id-1");
         epicWithThreeSubtasks = new Epic("epic2", "id-2");
-        subtask1 = new Subtask("subtask1", "id-3", Status.NEW, hourThirtyMinutes, yesterday, 2);
-        subtask2 = new Subtask("subtask2", "id-4", Status.NEW, fiveHours, now, 2);
-        subtask3 = new Subtask("subtask3", "id-5", Status.NEW, fiveHours, longTimeAgo, 2);
+        epicNoTime = new Epic("epic1", "id-3");
+        subtask1 = new Subtask("subtask1", "id-4", Status.NEW, hourThirtyMinutes, yesterday, 2);
+        subtask2 = new Subtask("subtask2", "id-5", Status.NEW, fiveHours, now, 2);
+        subtask3 = new Subtask("subtask3", "id-6", Status.NEW, fiveHours, longTimeAgo, 2);
+        subtask4 = new Subtask("subtask3", "id-7", Status.IN_PROGRESS,3);
 
         manager.addEpic(epicEmpty);
         manager.addEpic(epicWithThreeSubtasks);
+        manager.addEpic(epicNoTime);
         manager.addSubtask(subtask1);
         manager.addSubtask(subtask2);
         manager.addSubtask(subtask3);
+        manager.addSubtask(subtask4);
 
         manager.getEpic(1);
-        manager.getSubtask(5);
+        manager.getSubtask(6);
         manager.getEpic(2);
-        manager.getSubtask(3);
         manager.getSubtask(4);
+        manager.getSubtask(5);
+        manager.getEpic(3);
+        manager.getSubtask(7);
+        //TODO добавить новые обхекты и в метод testLoadAndSave()
 
         return manager;
     }

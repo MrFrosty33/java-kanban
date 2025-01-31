@@ -89,40 +89,68 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     status = Status.IN_PROGRESS;
                 }
 
+
                 //                  0   1    2    3        4          5         6        7     8
                 // String title = "id,type,name,status,description,duration,startTime,endTime,epic" + "\n";
-                if (nextLine[1].equals("EPIC")) {
-                    Epic epic = new Epic(nextLine[2], //name
-                            nextLine[4]); //descr
 
+                boolean hasTime = true; // могут быть случае, где не будет указано время
+                if (nextLine[5].equals("xxx") || nextLine[6].equals("xxx") || nextLine[7].equals("xxx")) {
+                    hasTime = false;
+                }
+
+                if (nextLine[1].equals("EPIC")) {
+                    Epic epic;
+                    if (hasTime) {
+                        epic = new Epic(nextLine[2], //name
+                                nextLine[4], //descr
+                                Duration.parse(nextLine[5]), //duration
+                                LocalDateTime.parse(nextLine[6], formatter), //startTime
+                                LocalDateTime.parse(nextLine[7], formatter)); //endTime
+                    } else {
+                        epic = new Epic(nextLine[2], //name
+                                nextLine[4]); //descr
+                    }
                     epics.add(epic);
                 } else if (nextLine[1].equals("SUBTASK")) {
-                    Subtask subtask = new Subtask(nextLine[2], //name
-                            nextLine[4], //descr
-                            status,
-                            Duration.parse(nextLine[5]), //duration
-                            LocalDateTime.parse(nextLine[6], formatter), //startTime
-                            Integer.valueOf(nextLine[8])); //epic id
-
+                    Subtask subtask;
+                    if (hasTime) {
+                        subtask = new Subtask(nextLine[2], //name
+                                nextLine[4], //descr
+                                status,
+                                Duration.parse(nextLine[5]), //duration
+                                LocalDateTime.parse(nextLine[6], formatter), //startTime
+                                Integer.valueOf(nextLine[8])); //epic id
+                    } else {
+                        subtask = new Subtask(nextLine[2], //name
+                                nextLine[4], //descr
+                                status,
+                                Integer.valueOf(nextLine[8])); //epic id
+                    }
                     subtasks.add(subtask);
                 } else {
-                    Task task = new Task(nextLine[2], //name
-                            nextLine[4], //descr
-                            status,
-                            Duration.parse(nextLine[5]), //duration
-                            LocalDateTime.parse(nextLine[6], formatter)); //startTime
-
+                    Task task;
+                    if(hasTime) {
+                        task = new Task(nextLine[2], //name
+                                nextLine[4], //descr
+                                status,
+                                Duration.parse(nextLine[5]), //duration
+                                LocalDateTime.parse(nextLine[6], formatter)); //startTime
+                    } else {
+                        task = new Task(nextLine[2], //name
+                                nextLine[4], //descr
+                                status);
+                    }
                     tasks.add(task);
                 }
             }
 
             // сперва надо класть эпики, иначе сабтаскам не к кому прикрепляться
-            for (Task task : tasks) {
-                fileBackedTaskManager.addTask(task);
-            }
-
             for (Epic epic : epics) {
                 fileBackedTaskManager.addEpic(epic);
+            }
+
+            for (Task task : tasks) {
+                fileBackedTaskManager.addTask(task);
             }
 
             for (Subtask subtask : subtasks) {
@@ -140,6 +168,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             throw new ManagerSaveException(ex.getMessage());
         }
     }
+
 
     /**
      * ----- Tasks -----
@@ -206,6 +235,5 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         super.removeEpic(id);
         save();
     }
-
 
 }

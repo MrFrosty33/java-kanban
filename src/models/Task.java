@@ -12,11 +12,31 @@ public class Task {
     private Status status;
     private Duration duration;
     private LocalDateTime startTime, endTime;
+    //TODO проблема в том, что Duration учитывает только часы и минуты, секунды.
 
 
     /**
      * ----- Constructors -----
      */
+
+    public Task(String name, String description, Status status,
+                Duration duration, LocalDateTime startTime, LocalDateTime endTime) {
+        this.name = name;
+        this.description = description;
+        this.status = status;
+        this.duration = duration;
+        this.startTime = startTime;
+        this.endTime = endTime;
+    }
+
+    public Task(String name, String description,
+                Duration duration, LocalDateTime startTime, LocalDateTime endTime) {
+        this.name = name;
+        this.description = description;
+        this.duration = duration;
+        this.startTime = startTime;
+        this.endTime = endTime;
+    }
 
     public Task(String name, String description, Status status,
                 Duration duration, LocalDateTime startTime) {
@@ -25,7 +45,14 @@ public class Task {
         this.status = status;
         this.duration = duration;
         this.startTime = startTime;
-        this.endTime = getEndTime();
+        this.endTime = calculateEndTime();
+    }
+
+    public Task(String name, String description, Status status) {
+        // Этот конструктор применяется если отсутствует время
+        this.name = name;
+        this.description = description;
+        this.status = status;
     }
 
 
@@ -88,11 +115,15 @@ public class Task {
     }
 
     public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public LocalDateTime calculateEndTime() {
         return LocalDateTime.from(startTime.plus(duration));
     }
 
     public void setEndTime(LocalDateTime endTime) {
-        this.endTime = getEndTime();
+        this.endTime = endTime;
     }
 
     /**
@@ -101,15 +132,33 @@ public class Task {
 
     @Override
     public String toString() {
-        // Длительность не стал форматировать, но при желании можно сделать
+        //Если время и длительность ещё не назначена, чтобы не было Exception
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yy|HH:mm");
+        String duration, startTime, endTime;
+        String ifNull = "xxx";
+        if (this.duration == null) {
+            duration = ifNull;
+        } else {
+            duration = getDuration().toString();
+        }
+        if (this.startTime == null) {
+            startTime = ifNull;
+        } else {
+            startTime = formatter.format(getStartTime());
+        }
+        if (this.endTime == null) {
+            endTime = ifNull;
+        } else {
+            endTime = formatter.format(getEndTime());
+        }
+        // Длительность не стал форматировать, но при желании можно сделат
         String taskClass = this.getClass().getName().substring(7).toUpperCase();
         String separator = ",";
         // Всё это, чтобы убрать "class models.XXX" из названия класса
         String result = getId() + separator + taskClass + separator + getName() + separator
                 + getStatus() + separator + getDescription() + separator
-                + duration + separator + formatter.format(startTime)
-                + separator + formatter.format(endTime) + separator;
+                + duration + separator + startTime
+                + separator + endTime + separator;
 
         return result;
     }
