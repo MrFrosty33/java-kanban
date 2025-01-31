@@ -12,6 +12,7 @@ import validators.TaskValidator;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class InMemoryTaskManager implements TaskManager {
 
@@ -30,7 +31,6 @@ public class InMemoryTaskManager implements TaskManager {
         return historyManager;
     }
 
-    //TODO добавить во все методы деревья
 
     /**
      * ----- Tasks -----
@@ -132,6 +132,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void removeAllSubtasks() {
+        // здесь не вижу смысла использовать stream. Будет тот же самый .forEach, только менее читаемый
         for (Epic epic : epics.values()) {
             epic.subtasks.clear();
             updateEpic(epic);
@@ -170,14 +171,13 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public ArrayList<Subtask> getSubtaskIdsFromEpic(Epic epic) {
-        ArrayList<Subtask> result = new ArrayList<>();
         Set<Integer> subtasksidSet = new HashSet<>(epic.getSubtaskIds());
 
-        for (Integer id : subtasksidSet) {
-            result.add(subtasks.get(id));
-        }
+        List<Subtask> result = subtasksidSet.stream()
+                .map(id -> subtasks.get(id))
+                .collect(Collectors.toList());
 
-        return result;
+        return new ArrayList<>(result);
     }
 
     @Override
@@ -193,10 +193,12 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void removeEpic(int id) {
         final Epic epicToRemove = epics.remove(id);
-        for (Integer subtaskId : epicToRemove.getSubtaskIds()) {
-            Subtask subtaskToRemove = subtasks.remove(subtaskId);
-            prioritizedSubtasks.remove(subtaskToRemove);
-        }
+
+        epicToRemove.getSubtaskIds().stream()
+                .map(subtask -> subtasks.remove(subtask))
+                .filter(Objects::nonNull)
+                .forEach(subtaskToRemove -> prioritizedSubtasks.remove(subtaskToRemove));
+
         prioritizedEpics.remove(epicToRemove);
     }
 
@@ -218,6 +220,7 @@ public class InMemoryTaskManager implements TaskManager {
             boolean allNew = true;
             boolean allDone = true;
 
+            // будто тоже лучше оставить так
             for (Integer key : subtasksidSet) {
                 Subtask subtask = subtasks.get(key);
 
@@ -243,21 +246,17 @@ public class InMemoryTaskManager implements TaskManager {
         // высчитываем стартовое время
         Epic epic = epics.get(id);
         List<Subtask> prioritizedSubtasks = getPrioritizedSubtasks();
-        for (Subtask subtask : prioritizedSubtasks) {
-            if (subtask.getEpicId() == id) {
-                epic.setStartTime(subtask.getStartTime());
-                break;
-            }
-        }
+        prioritizedSubtasks.stream()
+                .filter(subtask -> subtask.getEpicId() == id)
+                .findFirst()
+                .ifPresent(subtask -> epic.setStartTime(subtask.getStartTime()));
 
-        prioritizedSubtasks = prioritizedSubtasks.reversed();
         // высчитываем конечное время
-        for (Subtask subtask : prioritizedSubtasks) {
-            if (subtask.getEpicId() == id) {
-                epic.setEndTime(subtask.getEndTime());
-                break;
-            }
-        }
+        prioritizedSubtasks = prioritizedSubtasks.reversed();
+        prioritizedSubtasks.stream()
+                .filter(subtask -> subtask.getEpicId() == id)
+                .findFirst()
+                .ifPresent(subtask -> epic.setEndTime(subtask.getEndTime()));
 
         if (epic.getStartTime() != null && epic.getEndTime() != null) {
             epic.setDuration(Duration.between(epic.getStartTime(), epic.getEndTime()));
@@ -266,6 +265,8 @@ public class InMemoryTaskManager implements TaskManager {
 
     public <T extends Task> boolean validateTime(T task) {
         // если всё ок, возвращает false, если есть наложение - true
+
+        // будто тут тоже не стоит переделывать на stream()
         boolean result = false;
         if (task instanceof Epic) {
             if (!getPrioritizedEpics().isEmpty()) {
