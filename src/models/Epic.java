@@ -2,15 +2,11 @@ package models;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class Epic extends Task {
 
     public ArrayList<Integer> subtasks;
-    //TODO высчитать время и длительность
-
 
     public Epic(String name, String description) {
         super(name, description);
@@ -26,7 +22,7 @@ public class Epic extends Task {
     }
 
     public Epic(String name, String description,
-                Duration duration, LocalDateTime startTime, LocalDateTime endTime){
+                Duration duration, LocalDateTime startTime, LocalDateTime endTime) {
         super(name, description, duration, startTime, endTime);
         subtasks = new ArrayList<>();
     }

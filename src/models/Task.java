@@ -12,8 +12,6 @@ public class Task {
     private Status status;
     private Duration duration;
     private LocalDateTime startTime, endTime;
-    //TODO проблема в том, что Duration учитывает только часы и минуты, секунды.
-
 
     /**
      * ----- Constructors -----

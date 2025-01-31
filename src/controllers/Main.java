@@ -7,7 +7,7 @@ import models.Subtask;
 import java.io.File;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+
 
 public class Main {
     private static final File path = new File("src/resources/sprint7.csv");
@@ -28,8 +28,6 @@ public class Main {
          */
 
 
-
-
     }
 
     private static InMemoryTaskManager getManager() {
@@ -43,15 +41,15 @@ public class Main {
         LocalDateTime now = LocalDateTime.now();
 
 
-        // Здесь тоже важно, чтобы эпик добавлялся раньше, чем его сабтаск
         epicEmpty = new Epic("epic1", "id-1");
         epicWithThreeSubtasks = new Epic("epic2", "id-2");
         epicNoTime = new Epic("epic1", "id-3");
         subtask1 = new Subtask("subtask1", "id-4", Status.NEW, hourThirtyMinutes, yesterday, 2);
         subtask2 = new Subtask("subtask2", "id-5", Status.NEW, fiveHours, now, 2);
         subtask3 = new Subtask("subtask3", "id-6", Status.NEW, fiveHours, longTimeAgo, 2);
-        subtask4 = new Subtask("subtask3", "id-7", Status.IN_PROGRESS,3);
+        subtask4 = new Subtask("subtask3", "id-7", Status.IN_PROGRESS, 3);
 
+        // Важно, чтобы эпик добавлялся раньше, чем его сабтаск
         manager.addEpic(epicEmpty);
         manager.addEpic(epicWithThreeSubtasks);
         manager.addEpic(epicNoTime);
@@ -67,7 +65,6 @@ public class Main {
         manager.getSubtask(5);
         manager.getEpic(3);
         manager.getSubtask(7);
-        //TODO добавить новые обхекты и в метод testLoadAndSave()
 
         return manager;
     }
@@ -98,10 +95,12 @@ public class Main {
         FileBackedTaskManager fileManager = new FileBackedTaskManager(path, manager);
 
         manager.getEpic(1);
-        manager.getSubtask(5);
         manager.getEpic(2);
-        manager.getSubtask(3);
+        manager.getEpic(3);
         manager.getSubtask(4);
+        manager.getSubtask(5);
+        manager.getSubtask(6);
+        manager.getSubtask(7);
 
         System.out.println("Список истории просмотра задач" + manager.getHistory().getHistory());
 

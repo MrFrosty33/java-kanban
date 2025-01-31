@@ -8,6 +8,7 @@ import models.Status;
 import models.Subtask;
 import models.Task;
 import utils.Managers;
+import validators.TaskValidator;
 
 import java.time.Duration;
 import java.util.*;
@@ -39,7 +40,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void addTask(Task task) {
         task.setId(nextId++);
         tasks.put(task.getId(), task);
-        prioritizedTasks.add(task);
+        if (task.getStartTime() != null && !validateTime(task)) prioritizedTasks.add(task);
     }
 
     @Override
@@ -60,17 +61,21 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateTask(Task task) {
+        prioritizedTasks.remove(tasks.get(task.getId()));
         tasks.replace(task.getId(), task);
+        if (task.getStartTime() != null && !validateTime(task)) prioritizedTasks.add(task);
     }
 
     @Override
     public void removeTask(int id) {
         tasks.remove(id);
+        prioritizedTasks.remove(tasks.get(id));
     }
 
     @Override
     public void removeAllTasks() {
         tasks.clear();
+        prioritizedTasks.clear();
     }
 
     /**
@@ -81,7 +86,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void addSubtask(Subtask subtask) {
         subtask.setId(nextId++);
         subtasks.put(subtask.getId(), subtask);
-        prioritizedSubtasks.add(subtask);
+        if (subtask.getStartTime() != null && !validateTime(subtask)) prioritizedSubtasks.add(subtask);
 
         Epic epic = epics.get(subtask.getEpicId());
         epic.subtasks.add(subtask.getId());
@@ -106,9 +111,11 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateSubtask(Subtask subtask) {
+        prioritizedSubtasks.remove(subtasks.get(subtask.getId()));
         Epic epic = epics.get(subtask.getEpicId());
         subtasks.replace(subtask.getId(), subtask);
         updateEpic(epic);
+        if (subtask.getStartTime() != null && !validateTime(subtask)) prioritizedSubtasks.add(subtask);
     }
 
     @Override
@@ -119,6 +126,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
         Epic epic = epics.get(subtask.getEpicId());
         epic.subtasks.remove(id);
+        prioritizedSubtasks.remove(subtasks.get(id));
         updateEpic(epic);
     }
 
@@ -129,6 +137,7 @@ public class InMemoryTaskManager implements TaskManager {
             updateEpic(epic);
         }
         subtasks.clear();
+        prioritizedSubtasks.clear();
     }
 
     /**
@@ -140,7 +149,7 @@ public class InMemoryTaskManager implements TaskManager {
         epic.setId(nextId++);
         epics.put(epic.getId(), epic);
         updateEpic(epic);
-        prioritizedEpics.add(epic); // на этот момент может стоять странная дата
+        if (epic.getStartTime() != null && !validateTime(epic)) prioritizedEpics.add(epic);
     }
 
     @Override
@@ -148,7 +157,7 @@ public class InMemoryTaskManager implements TaskManager {
         return new ArrayList<>(epics.values());
     }
 
-    public ArrayList<Epic> getPrioritizedEoics() {
+    public ArrayList<Epic> getPrioritizedEpics() {
         return new ArrayList<>(prioritizedEpics);
     }
 
@@ -173,26 +182,30 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateEpic(Epic epic) {
-        prioritizedEpics.remove(epic); // убираем устаревший
+        prioritizedEpics.remove(epics.get(epic.getId()));
         updateEpicStatus(epic.getId());
         updateEpicTime(epic.getId());
         epics.replace(epic.getId(), epic);
-        prioritizedEpics.add(epic); // добавляем обновлённый
+        if (epic.getStartTime() != null && !validateTime(epic)) prioritizedEpics.add(epic);
     }
 
 
     @Override
     public void removeEpic(int id) {
-        final Epic epic = epics.remove(id);
-        for (Integer subtaskId : epic.getSubtaskIds()) {
-            subtasks.remove(subtaskId);
+        final Epic epicToRemove = epics.remove(id);
+        for (Integer subtaskId : epicToRemove.getSubtaskIds()) {
+            Subtask subtaskToRemove = subtasks.remove(subtaskId);
+            prioritizedSubtasks.remove(subtaskToRemove);
         }
+        prioritizedEpics.remove(epicToRemove);
     }
 
     @Override
     public void removeAllEpics() {
         epics.clear();
         subtasks.clear();
+        prioritizedEpics.clear();
+        prioritizedSubtasks.clear();
     }
 
     @Override
@@ -226,7 +239,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
-    public void updateEpicTime(int id){
+    public void updateEpicTime(int id) {
         // высчитываем стартовое время
         Epic epic = epics.get(id);
         List<Subtask> prioritizedSubtasks = getPrioritizedSubtasks();
@@ -249,6 +262,34 @@ public class InMemoryTaskManager implements TaskManager {
         if (epic.getStartTime() != null && epic.getEndTime() != null) {
             epic.setDuration(Duration.between(epic.getStartTime(), epic.getEndTime()));
         }
+    }
+
+    public <T extends Task> boolean validateTime(T task) {
+        // если всё ок, возвращает false, если есть наложение - true
+        boolean result = false;
+        if (task instanceof Epic) {
+            if (!getPrioritizedEpics().isEmpty()) {
+                for (Epic otherTask : getPrioritizedEpics()) {
+                    result = TaskValidator.validateTime(task, otherTask);
+                    if (result) return result;
+                }
+            }
+        } else if (task instanceof Subtask) {
+            if (!getPrioritizedSubtasks().isEmpty()) {
+                for (Subtask otherTask : getPrioritizedSubtasks()) {
+                    result = TaskValidator.validateTime(task, otherTask);
+                    if (result) return result;
+                }
+            }
+        } else {
+            if (!getPrioritizedTasks().isEmpty()) {
+                for (Task otherTask : getPrioritizedTasks()) {
+                    result = TaskValidator.validateTime(task, otherTask);
+                    if (result) return result;
+                }
+            }
+        }
+        return result;
     }
 
 }
