@@ -265,17 +265,15 @@ public class InMemoryTaskManager implements TaskManager {
 
     public <T extends Task> boolean validateTime(T task) {
         // если всё ок, возвращает false, если есть наложение - true
+        // вопрос, а надо ли учитывать пересечения у разных задач? Пересечение между сабтаском и таском?
 
         // будто тут тоже не стоит переделывать на stream()
         boolean result = false;
         if (task instanceof Epic) {
-            if (!getPrioritizedEpics().isEmpty()) {
-                for (Epic otherTask : getPrioritizedEpics()) {
-                    result = TaskValidator.validateTime(task, otherTask);
-                    if (result) return result;
-                }
-            }
-        } else if (task instanceof Subtask) {
+            // эпик не требует же валидации?
+            return result;
+        }
+        if (task instanceof Subtask) {
             if (!getPrioritizedSubtasks().isEmpty()) {
                 for (Subtask otherTask : getPrioritizedSubtasks()) {
                     result = TaskValidator.validateTime(task, otherTask);

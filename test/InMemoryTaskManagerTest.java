@@ -5,15 +5,17 @@ import models.Subtask;
 import models.Task;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 
 public class InMemoryTaskManagerTest {
+    static InMemoryTaskManager manager;
 
-    @Test
-    public void inMemoryTaskManagerCanAddDifferentTasksAndFindItById() {
-        InMemoryTaskManager manager = new InMemoryTaskManager();
+    @BeforeAll
+    public static void beforeAll() {
+        manager = new InMemoryTaskManager();
         Duration hourThirtyMinutes = Duration.ofHours(1).plusMinutes(30);
         Duration fiveHours = Duration.ofHours(5);
         LocalDateTime longTimeAgo = LocalDateTime.now().minusYears(2).minusWeeks(35).minusMinutes(912);
@@ -32,8 +34,10 @@ public class InMemoryTaskManagerTest {
         manager.addEpic(epic2); //4
         manager.addSubtask(subtask1); //5
         manager.addSubtask(subtask2); //6
+    }
 
-
+    @Test
+    public void inMemoryTaskManagerCanAddDifferentTasksAndFindItById() {
         Assertions.assertNotNull(manager.getTask(1));
         Assertions.assertNotNull(manager.getTask(2));
         Assertions.assertNotNull(manager.getSubtask(5));

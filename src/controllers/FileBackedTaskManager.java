@@ -129,7 +129,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     subtasks.add(subtask);
                 } else {
                     Task task;
-                    if(hasTime) {
+                    if (hasTime) {
                         task = new Task(nextLine[2], //name
                                 nextLine[4], //descr
                                 status,
