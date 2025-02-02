@@ -1,0 +1,8 @@
+id,type,name,status,description,duration,startTime,endTime,epic
+3,EPIC,epic1,IN_PROGRESS,id-3,xxx,xxx,xxx,
+5,SUBTASK,subtask2,NEW,id-5,PT5H,02.02.25|13:04,02.02.25|18:04,2,
+6,SUBTASK,subtask3,NEW,id-6,PT5H,01.06.22|21:52,02.06.22|02:52,2,
+7,SUBTASK,subtask3,IN_PROGRESS,id-7,xxx,xxx,xxx,3,
+1,EPIC,epic1,NEW,id-1,xxx,xxx,xxx,
+2,EPIC,epic2,NEW,id-2,PT11H30M,01.06.22|21:52,02.02.25|18:04,
+4,SUBTASK,subtask1,NEW,id-4,PT1H30M,01.02.25|13:04,01.02.25|14:34,2,
