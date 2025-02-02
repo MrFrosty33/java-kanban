@@ -23,7 +23,6 @@ public class InMemoryTaskManager implements TaskManager {
     protected final HistoryManager historyManager = Managers.getDefaultHistory();
     private final TreeSet<Task> prioritizedTasks = new TreeSet<>(new StartTimeComparator<>());
     private final TreeSet<Subtask> prioritizedSubtasks = new TreeSet<>(new StartTimeComparator<>());
-    private final TreeSet<Epic> prioritizedEpics = new TreeSet<>(new StartTimeComparator<>());
 
 
     @Override
@@ -68,12 +67,20 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void removeTask(int id) {
+        final Task task = tasks.remove(id);
+        if (task == null) {
+            return;
+        }
+        historyManager.remove(id);
         tasks.remove(id);
         prioritizedTasks.remove(tasks.get(id));
     }
 
     @Override
     public void removeAllTasks() {
+        for (Task task : tasks.values()) {
+            historyManager.remove(task.getId());
+        }
         tasks.clear();
         prioritizedTasks.clear();
     }
@@ -101,6 +108,7 @@ public class InMemoryTaskManager implements TaskManager {
     public ArrayList<Subtask> getPrioritizedSubtasks() {
         return new ArrayList<>(prioritizedSubtasks);
     }
+
 
     @Override
     public Subtask getSubtask(int id) {
@@ -132,13 +140,15 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void removeAllSubtasks() {
-        // здесь не вижу смысла использовать stream. Будет тот же самый .forEach, только менее читаемый
         for (Epic epic : epics.values()) {
             epic.subtasks.clear();
             updateEpic(epic);
         }
-        subtasks.clear();
+        for (Subtask subtask : subtasks.values()) {
+            historyManager.remove(subtask.getId());
+        }
         prioritizedSubtasks.clear();
+        subtasks.clear();
     }
 
     /**
@@ -150,7 +160,6 @@ public class InMemoryTaskManager implements TaskManager {
         epic.setId(nextId++);
         epics.put(epic.getId(), epic);
         updateEpic(epic);
-        if (epic.getStartTime() != null && !validateTime(epic)) prioritizedEpics.add(epic);
     }
 
     @Override
@@ -158,9 +167,6 @@ public class InMemoryTaskManager implements TaskManager {
         return new ArrayList<>(epics.values());
     }
 
-    public ArrayList<Epic> getPrioritizedEpics() {
-        return new ArrayList<>(prioritizedEpics);
-    }
 
     @Override
     public Epic getEpic(int id) {
@@ -182,32 +188,37 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateEpic(Epic epic) {
-        prioritizedEpics.remove(epics.get(epic.getId()));
         updateEpicStatus(epic.getId());
         updateEpicTime(epic.getId());
         epics.replace(epic.getId(), epic);
-        if (epic.getStartTime() != null && !validateTime(epic)) prioritizedEpics.add(epic);
     }
 
 
     @Override
     public void removeEpic(int id) {
         final Epic epicToRemove = epics.remove(id);
+        if (epicToRemove == null) {
+            return;
+        }
 
         epicToRemove.getSubtaskIds().stream()
                 .map(subtask -> subtasks.remove(subtask))
                 .filter(Objects::nonNull)
                 .forEach(subtaskToRemove -> prioritizedSubtasks.remove(subtaskToRemove));
 
-        prioritizedEpics.remove(epicToRemove);
     }
 
     @Override
     public void removeAllEpics() {
+        for (Epic epic : epics.values()) {
+            historyManager.remove(epic.getId());
+        }
+        for (Subtask subtask : subtasks.values()) {
+            historyManager.remove(subtask.getId());
+        }
         epics.clear();
-        subtasks.clear();
-        prioritizedEpics.clear();
         prioritizedSubtasks.clear();
+        subtasks.clear();
     }
 
     @Override
@@ -246,6 +257,7 @@ public class InMemoryTaskManager implements TaskManager {
         // высчитываем стартовое время
         Epic epic = epics.get(id);
         List<Subtask> prioritizedSubtasks = getPrioritizedSubtasks();
+
         prioritizedSubtasks.stream()
                 .filter(subtask -> subtask.getEpicId() == id)
                 .findFirst()
@@ -258,37 +270,35 @@ public class InMemoryTaskManager implements TaskManager {
                 .findFirst()
                 .ifPresent(subtask -> epic.setEndTime(subtask.getEndTime()));
 
+        // высчитываем продолжительность
+        Duration duration = Duration.ZERO;
+        for (Subtask subtask : getSubtaskIdsFromEpic(epic)) {
+            if (subtask.getDuration() != null) duration = duration.plus(subtask.getDuration());
+        }
+
         if (epic.getStartTime() != null && epic.getEndTime() != null) {
-            epic.setDuration(Duration.between(epic.getStartTime(), epic.getEndTime()));
+            epic.setDuration(duration);
         }
     }
 
     public <T extends Task> boolean validateTime(T task) {
         // если всё ок, возвращает false, если есть наложение - true
-        // вопрос, а надо ли учитывать пересечения у разных задач? Пересечение между сабтаском и таском?
 
-        // будто тут тоже не стоит переделывать на stream()
         boolean result = false;
-        if (task instanceof Epic) {
-            // эпик не требует же валидации?
-            return result;
-        }
-        if (task instanceof Subtask) {
-            if (!getPrioritizedSubtasks().isEmpty()) {
-                for (Subtask otherTask : getPrioritizedSubtasks()) {
-                    result = TaskValidator.validateTime(task, otherTask);
-                    if (result) return result;
-                }
+
+        if (!getPrioritizedTasks().isEmpty()) {
+            for (Task otherTask : getPrioritizedTasks()) {
+                result = TaskValidator.validateTime(task, otherTask);
+                if (result) return result;
             }
-        } else {
-            if (!getPrioritizedTasks().isEmpty()) {
-                for (Task otherTask : getPrioritizedTasks()) {
-                    result = TaskValidator.validateTime(task, otherTask);
-                    if (result) return result;
-                }
+            for (Subtask otherTask : getPrioritizedSubtasks()) {
+                result = TaskValidator.validateTime(task, otherTask);
+                if (result) return result;
             }
         }
+
         return result;
     }
+
 
 }
