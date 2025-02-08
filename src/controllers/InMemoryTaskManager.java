@@ -1,6 +1,7 @@
 package controllers;
 
 import comparators.StartTimeComparator;
+import exceptions.ValidateTimeException;
 import interfaces.HistoryManager;
 import interfaces.TaskManager;
 import models.Epic;
@@ -36,10 +37,12 @@ public class InMemoryTaskManager implements TaskManager {
      */
 
     @Override
-    public void addTask(Task task) {
+    public void addTask(Task task) throws ValidateTimeException {
+        //TODO добавить во все методы добавления подобные исключения
         task.setId(nextId++);
         tasks.put(task.getId(), task);
         if (task.getStartTime() != null && !validateTime(task)) prioritizedTasks.add(task);
+        if(validateTime(task)) throw new ValidateTimeException();
     }
 
     @Override
