@@ -1,8 +1,10 @@
 package controllers;
 
+import API.HttpTaskServer;
 import models.Epic;
 import models.Status;
 import models.Subtask;
+import models.Task;
 
 import java.io.File;
 import java.time.Duration;
@@ -13,7 +15,7 @@ public class Main {
     private static final File path = new File("src/resources/sprint7.csv");
 
     public static void main(String[] args) {
-        testLoadAndSave();
+        //testLoadAndSave();
         //testSave(new File("src/resources/test.csv"));
 
 
@@ -24,8 +26,36 @@ public class Main {
         for (Subtask subtask : subtasks) {
             System.out.println(subtask);
         }
-
          */
+
+        testGetTasksHandler();
+
+
+
+    }
+
+    private static void testGetTasksHandler() {
+        InMemoryTaskManager manager = new InMemoryTaskManager();
+        Task task1, task2, task3;
+        LocalDateTime yesterday = LocalDateTime.now().minusDays(1);
+        Duration fiveHours = Duration.ofHours(5);
+        LocalDateTime now = LocalDateTime.now();
+
+        task1 = new Task("task1", "id-1", Status.NEW, fiveHours, now);
+        task2 = new Task("task2", "id-2", Status.IN_PROGRESS, fiveHours, yesterday);
+        task3 = new Task("task3", "id-3", Status.NEW);
+
+        manager.addTask(task1);
+        manager.addTask(task2);
+        manager.addTask(task3);
+
+        manager.getTask(1);
+        manager.getTask(2);
+        manager.getTask(3);
+
+        System.out.println(manager.getHistory().getHistory());
+        HttpTaskServer server = new HttpTaskServer(manager);
+        server.start();
 
 
     }

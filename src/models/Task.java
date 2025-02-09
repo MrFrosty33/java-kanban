@@ -124,8 +124,9 @@ public class Task {
         this.endTime = endTime;
     }
 
+
     /**
-     * ----- @Override -----
+     * ----- @Print -----
      */
 
     @Override
@@ -150,9 +151,8 @@ public class Task {
             endTime = formatter.format(getEndTime());
         }
         // Длительность не стал форматировать, но при желании можно сделат
-        String taskClass = this.getClass().getName().substring(7).toUpperCase();
+        String taskClass = this.getClass().getSimpleName().toUpperCase();
         String separator = ",";
-        // Всё это, чтобы убрать "class models.XXX" из названия класса
         String result = getId() + separator + taskClass + separator + getName() + separator
                 + getStatus() + separator + getDescription() + separator
                 + duration + separator + startTime

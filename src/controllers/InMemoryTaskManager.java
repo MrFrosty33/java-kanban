@@ -1,6 +1,7 @@
 package controllers;
 
 import comparators.StartTimeComparator;
+import exceptions.NotFoundException;
 import exceptions.ValidateTimeException;
 import interfaces.HistoryManager;
 import interfaces.TaskManager;
@@ -39,10 +40,13 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void addTask(Task task) throws ValidateTimeException {
         //TODO добавить во все методы добавления подобные исключения
+        //правильно ли понимаю, что есть не проходит валидацию, то и добавляться \ обновляться не должен?
+        //пока сделал всё по такой логике.
+        if (validateTime(task)) throw new ValidateTimeException();
+
         task.setId(nextId++);
         tasks.put(task.getId(), task);
-        if (task.getStartTime() != null && !validateTime(task)) prioritizedTasks.add(task);
-        if(validateTime(task)) throw new ValidateTimeException();
+        if (task.getStartTime() != null) prioritizedTasks.add(task);
     }
 
     @Override
@@ -55,17 +59,23 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Task getTask(int id) {
-        Task task = tasks.get(id);
-        historyManager.add(task);
-        return task;
+    public Task getTask(int id) throws NotFoundException {
+        if (tasks.containsKey(id)) {
+            Task task = tasks.get(id);
+            historyManager.add(task);
+            return task;
+        } else {
+            throw new NotFoundException();
+        }
     }
 
     @Override
-    public void updateTask(Task task) {
+    public void updateTask(Task task) throws ValidateTimeException {
+        if (validateTime(task)) throw new ValidateTimeException();
+
         prioritizedTasks.remove(tasks.get(task.getId()));
         tasks.replace(task.getId(), task);
-        if (task.getStartTime() != null && !validateTime(task)) prioritizedTasks.add(task);
+        if (task.getStartTime() != null) prioritizedTasks.add(task);
     }
 
     @Override
@@ -93,14 +103,16 @@ public class InMemoryTaskManager implements TaskManager {
      */
 
     @Override
-    public void addSubtask(Subtask subtask) {
+    public void addSubtask(Subtask subtask) throws ValidateTimeException {
+        if (validateTime(subtask)) throw new ValidateTimeException();
+
         subtask.setId(nextId++);
         subtasks.put(subtask.getId(), subtask);
-        if (subtask.getStartTime() != null && !validateTime(subtask)) prioritizedSubtasks.add(subtask);
 
         Epic epic = epics.get(subtask.getEpicId());
         epic.subtasks.add(subtask.getId());
         updateEpic(epic);
+        if (subtask.getStartTime() != null) prioritizedSubtasks.add(subtask);
     }
 
     @Override
@@ -114,19 +126,25 @@ public class InMemoryTaskManager implements TaskManager {
 
 
     @Override
-    public Subtask getSubtask(int id) {
-        Subtask subtask = subtasks.get(id);
-        historyManager.add(subtask);
-        return subtask;
+    public Subtask getSubtask(int id) throws NotFoundException {
+        if (subtasks.containsKey(id)) {
+            Subtask subtask = subtasks.get(id);
+            historyManager.add(subtask);
+            return subtask;
+        } else {
+            throw new NotFoundException();
+        }
     }
 
     @Override
     public void updateSubtask(Subtask subtask) {
+        if (validateTime(subtask)) throw new ValidateTimeException();
+
         prioritizedSubtasks.remove(subtasks.get(subtask.getId()));
         Epic epic = epics.get(subtask.getEpicId());
         subtasks.replace(subtask.getId(), subtask);
         updateEpic(epic);
-        if (subtask.getStartTime() != null && !validateTime(subtask)) prioritizedSubtasks.add(subtask);
+        if (subtask.getStartTime() != null) prioritizedSubtasks.add(subtask);
     }
 
     @Override
@@ -172,10 +190,14 @@ public class InMemoryTaskManager implements TaskManager {
 
 
     @Override
-    public Epic getEpic(int id) {
-        Epic epic = epics.get(id);
-        historyManager.add(epic);
-        return epic;
+    public Epic getEpic(int id) throws NotFoundException {
+        if (epics.containsKey(id)) {
+            Epic epic = epics.get(id);
+            historyManager.add(epic);
+            return epic;
+        } else {
+            throw new NotFoundException();
+        }
     }
 
     @Override
