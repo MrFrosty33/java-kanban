@@ -1,7 +1,10 @@
-package API.handlers;
+package api.handlers;
 
-import API.Endpoint;
-import API.adapters.*;
+import api.Endpoint;
+import api.adapters.DurationAdapter;
+import api.adapters.LocalDateTimeAdapter;
+import api.adapters.StatusAdapter;
+import api.adapters.TaskListTypeToken;
 import com.google.gson.*;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -9,7 +12,7 @@ import controllers.InMemoryTaskManager;
 import exceptions.NotFoundException;
 import exceptions.ValidateTimeException;
 import models.Status;
-import models.Subtask;
+import models.Task;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -18,10 +21,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
+public class TasksHandler extends BaseHttpHandler implements HttpHandler {
     private InMemoryTaskManager manager;
 
-    public SubtasksHandler(InMemoryTaskManager manager) {
+    public TasksHandler(InMemoryTaskManager manager) {
         this.manager = manager;
     }
 
@@ -43,13 +46,13 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
             case GET:
                 try {
                     if (path.length == 2) {
-                        Subtask subtask = manager.getSubtask(Integer.parseInt(path[1]));
-                        String subtasksJson = gson.toJson(subtask);
-                        sendResponse(exchange, subtasksJson, 200);
+                        Task task = manager.getTask(Integer.parseInt(path[1]));
+                        String taskJson = gson.toJson(task);
+                        sendResponse(exchange, taskJson, 200);
                     } else if (path.length == 1) {
-                        ArrayList<Subtask> subtasks = manager.getAllSubtasks();
-                        String subtasksJson = gson.toJson(subtasks, new SubtaskListTypeToken().getType());
-                        sendResponse(exchange, subtasksJson, 200);
+                        ArrayList<Task> tasks = manager.getAllTasks();
+                        String tasksJson = gson.toJson(tasks, new TaskListTypeToken().getType());
+                        sendResponse(exchange, tasksJson, 200);
                     } else {
                         sendWrongPath(exchange);
                     }
@@ -64,13 +67,13 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
             case POST:
                 try {
                     String json = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-                    Subtask subtask = gson.fromJson(json, Subtask.class);
+                    Task task = gson.fromJson(json, Task.class);
 
                     if (path.length == 2) {
-                        manager.updateSubtask(subtask);
+                        manager.updateTask(task);
                         sendResponse(exchange, null, 201);
                     } else if (path.length == 1) {
-                        manager.addSubtask(subtask);
+                        manager.addTask(task);
                         sendResponse(exchange, null, 201);
                     } else {
                         sendWrongPath(exchange);
@@ -89,12 +92,12 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
                 try {
                     if (path.length == 2) {
                         // нужно возвращать тот объект, что был удалён?
-                        // Subtask subtaskToRemove = manager.getSubtask(Integer.parseInt(path[1]));
-                        manager.removeSubtask(Integer.parseInt(path[1]));
-                        // String subtaskToRemove = gson.toJson(subtaskToRemove);
+                        //Task taskToRemove = manager.getTask(Integer.parseInt(path[1]));
+                        manager.removeTask(Integer.parseInt(path[1]));
+                        //String taskJson = gson.toJson(taskToRemove);
                         sendResponse(exchange, null, 200);
                     } else if (path.length == 1) {
-                        manager.removeAllSubtasks();
+                        manager.removeAllTasks();
                         sendResponse(exchange, null, 200);
                     } else {
                         sendWrongPath(exchange);

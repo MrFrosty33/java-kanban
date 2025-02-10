@@ -1,28 +1,26 @@
-package API.handlers;
+package api.handlers;
 
-import API.Endpoint;
-import API.adapters.DurationAdapter;
-import API.adapters.LocalDateTimeAdapter;
-import API.adapters.StatusAdapter;
-import API.adapters.TaskListTypeToken;
+import api.Endpoint;
+import api.adapters.DurationAdapter;
+import api.adapters.LocalDateTimeAdapter;
+import api.adapters.StatusAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import controllers.InMemoryTaskManager;
+import interfaces.HistoryManager;
 import models.Status;
-import models.Task;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 
-public class PrioritizedTasksHandler extends BaseHttpHandler implements HttpHandler {
+public class HistoryHandler extends BaseHttpHandler implements HttpHandler {
     private InMemoryTaskManager manager;
 
-    public PrioritizedTasksHandler(InMemoryTaskManager manager) {
+    public HistoryHandler(InMemoryTaskManager manager) {
         this.manager = manager;
     }
 
@@ -42,11 +40,9 @@ public class PrioritizedTasksHandler extends BaseHttpHandler implements HttpHand
 
         switch (endpoint) {
             case GET:
-                ArrayList<Task> tasks = manager.getPrioritizedTasks();
-                String tasksJson = gson.toJson(tasks, new TaskListTypeToken().getType());
-                if (tasks.isEmpty()) sendNotFound(exchange);
-                else sendResponse(exchange, tasksJson, 200);
-                break;
+                HistoryManager history = manager.getHistory();
+                String historyJson = gson.toJson(history.getHistory());
+                sendResponse(exchange, historyJson, 200);
             default:
                 sendWrongRequestMethod(exchange);
                 break;

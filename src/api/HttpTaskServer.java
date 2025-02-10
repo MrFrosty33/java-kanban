@@ -1,6 +1,6 @@
-package API;
+package api;
 
-import API.handlers.*;
+import api.handlers.*;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import controllers.InMemoryTaskManager;

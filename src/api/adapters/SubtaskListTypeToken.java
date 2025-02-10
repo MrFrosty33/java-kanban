@@ -1,4 +1,4 @@
-package API.adapters;
+package api.adapters;
 
 import com.google.gson.reflect.TypeToken;
 import models.Subtask;

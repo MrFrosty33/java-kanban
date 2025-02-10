@@ -1,17 +1,17 @@
-package API.handlers;
+package api.handlers;
 
-import API.Endpoint;
-import API.adapters.DurationAdapter;
-import API.adapters.LocalDateTimeAdapter;
-import API.adapters.StatusAdapter;
-import API.adapters.TaskListTypeToken;
+import api.Endpoint;
+import api.adapters.DurationAdapter;
+import api.adapters.LocalDateTimeAdapter;
+import api.adapters.StatusAdapter;
+import api.adapters.TaskListTypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import controllers.InMemoryTaskManager;
 import models.Status;
-import models.Subtask;
+import models.Task;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -19,10 +19,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class PrioritizedSubtasksHandler extends BaseHttpHandler implements HttpHandler {
+public class PrioritizedTasksHandler extends BaseHttpHandler implements HttpHandler {
     private InMemoryTaskManager manager;
 
-    public PrioritizedSubtasksHandler(InMemoryTaskManager manager) {
+    public PrioritizedTasksHandler(InMemoryTaskManager manager) {
         this.manager = manager;
     }
 
@@ -42,9 +42,9 @@ public class PrioritizedSubtasksHandler extends BaseHttpHandler implements HttpH
 
         switch (endpoint) {
             case GET:
-                ArrayList<Subtask> subtasks = manager.getPrioritizedSubtasks();
-                String tasksJson = gson.toJson(subtasks, new TaskListTypeToken().getType());
-                if (subtasks.isEmpty()) sendNotFound(exchange);
+                ArrayList<Task> tasks = manager.getPrioritizedTasks();
+                String tasksJson = gson.toJson(tasks, new TaskListTypeToken().getType());
+                if (tasks.isEmpty()) sendNotFound(exchange);
                 else sendResponse(exchange, tasksJson, 200);
                 break;
             default:

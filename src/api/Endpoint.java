@@ -1,4 +1,4 @@
-package API;
+package api;
 
 public enum Endpoint {
     GET, POST, DELETE;

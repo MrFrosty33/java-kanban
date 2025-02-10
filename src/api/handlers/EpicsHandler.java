@@ -1,18 +1,16 @@
-package API.handlers;
+package api.handlers;
 
-import API.Endpoint;
-import API.adapters.DurationAdapter;
-import API.adapters.LocalDateTimeAdapter;
-import API.adapters.StatusAdapter;
-import API.adapters.TaskListTypeToken;
+import api.Endpoint;
+import api.adapters.*;
 import com.google.gson.*;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import controllers.InMemoryTaskManager;
 import exceptions.NotFoundException;
 import exceptions.ValidateTimeException;
+import models.Epic;
 import models.Status;
-import models.Task;
+import models.Subtask;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -21,10 +19,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class TasksHandler extends BaseHttpHandler implements HttpHandler {
+public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
     private InMemoryTaskManager manager;
 
-    public TasksHandler(InMemoryTaskManager manager) {
+    public EpicsHandler(InMemoryTaskManager manager) {
         this.manager = manager;
     }
 
@@ -45,14 +43,25 @@ public class TasksHandler extends BaseHttpHandler implements HttpHandler {
         switch (endpoint) {
             case GET:
                 try {
-                    if (path.length == 2) {
-                        Task task = manager.getTask(Integer.parseInt(path[1]));
-                        String taskJson = gson.toJson(task);
-                        sendResponse(exchange, taskJson, 200);
+                    if (path.length == 3) {
+                        if (path[2].equals("subtasks")) {
+                            Epic epic = manager.getEpic(Integer.parseInt(path[1]));
+                            ArrayList<Subtask> subtasksFromEpic = manager.getSubtasksFromEpic(epic);
+                            String subtasksFromEpicJson =
+                                    gson.toJson(subtasksFromEpic, new SubtaskListTypeToken().getType());
+                            sendResponse(exchange, subtasksFromEpicJson, 200);
+
+                        } else {
+                            sendWrongPath(exchange);
+                        }
+                    } else if (path.length == 2) {
+                        Epic epic = manager.getEpic(Integer.parseInt(path[1]));
+                        String epicJson = gson.toJson(epic);
+                        sendResponse(exchange, epicJson, 200);
                     } else if (path.length == 1) {
-                        ArrayList<Task> tasks = manager.getAllTasks();
-                        String tasksJson = gson.toJson(tasks, new TaskListTypeToken().getType());
-                        sendResponse(exchange, tasksJson, 200);
+                        ArrayList<Epic> epics = manager.getAllEpics();
+                        String epicsJson = gson.toJson(epics, new EpicListTypeToken().getType());
+                        sendResponse(exchange, epicsJson, 200);
                     } else {
                         sendWrongPath(exchange);
                     }
@@ -67,13 +76,10 @@ public class TasksHandler extends BaseHttpHandler implements HttpHandler {
             case POST:
                 try {
                     String json = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-                    Task task = gson.fromJson(json, Task.class);
+                    Epic epic = gson.fromJson(json, Epic.class);
 
-                    if (path.length == 2) {
-                        manager.updateTask(task);
-                        sendResponse(exchange, null, 201);
-                    } else if (path.length == 1) {
-                        manager.addTask(task);
+                    if (path.length == 1) {
+                        manager.addEpic(epic);
                         sendResponse(exchange, null, 201);
                     } else {
                         sendWrongPath(exchange);
@@ -92,12 +98,12 @@ public class TasksHandler extends BaseHttpHandler implements HttpHandler {
                 try {
                     if (path.length == 2) {
                         // нужно возвращать тот объект, что был удалён?
-                        //Task taskToRemove = manager.getTask(Integer.parseInt(path[1]));
-                        manager.removeTask(Integer.parseInt(path[1]));
-                        //String taskJson = gson.toJson(taskToRemove);
+                        //Epic epicToRemove = manager.getEpic(Integer.parseInt(path[1]));
+                        manager.removeEpic(Integer.parseInt(path[1]));
+                        //String epicToRemove = gson.toJson(epicToRemove);
                         sendResponse(exchange, null, 200);
                     } else if (path.length == 1) {
-                        manager.removeAllTasks();
+                        manager.removeAllEpics();
                         sendResponse(exchange, null, 200);
                     } else {
                         sendWrongPath(exchange);
