@@ -88,7 +88,10 @@ public class InMemoryTaskManager implements TaskManager {
 
         historyManager.remove(id);
         tasks.remove(id);
-        prioritizedTasks.remove(task);
+
+        if (prioritizedTasks.contains(task)) {
+            prioritizedTasks.remove(task);
+        }
     }
 
     @Override
@@ -114,8 +117,8 @@ public class InMemoryTaskManager implements TaskManager {
 
         Epic epic = epics.get(subtask.getEpicId());
         epic.subtasks.add(subtask.getId());
-        updateEpic(epic);
         if (subtask.getStartTime() != null) prioritizedSubtasks.add(subtask);
+        updateEpic(epic);
     }
 
     @Override
@@ -156,9 +159,14 @@ public class InMemoryTaskManager implements TaskManager {
         final Subtask subtask = subtasks.remove(id);
         if (subtask == null) throw new NotFoundException();
 
+        // ArrayList внутри эпика удаляет по индексу
         Epic epic = epics.get(subtask.getEpicId());
-        epic.subtasks.remove(id);
-        prioritizedSubtasks.remove(subtasks.get(id));
+        int index = epic.subtasks.indexOf(subtask.getId());
+        epic.subtasks.remove(index);
+
+        if (prioritizedSubtasks.contains(subtask)) {
+            prioritizedSubtasks.remove(subtasks.get(id));
+        }
         updateEpic(epic);
     }
 
@@ -205,8 +213,9 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public ArrayList<Subtask> getSubtaskIdsFromEpic(Epic epic) {
+    public ArrayList<Subtask> getSubtasksFromEpic(Epic epic) throws NotFoundException {
         Set<Integer> subtasksidSet = new HashSet<>(epic.getSubtaskIds());
+        if (subtasksidSet.isEmpty()) throw new NotFoundException();
 
         List<Subtask> result = subtasksidSet.stream()
                 .map(id -> subtasks.get(id))
@@ -285,26 +294,28 @@ public class InMemoryTaskManager implements TaskManager {
         Epic epic = epics.get(id);
         List<Subtask> prioritizedSubtasks = getPrioritizedSubtasks();
 
-        prioritizedSubtasks.stream()
-                .filter(subtask -> subtask.getEpicId() == id)
-                .findFirst()
-                .ifPresent(subtask -> epic.setStartTime(subtask.getStartTime()));
+        if (epic.getSubtaskIds() != null && !prioritizedSubtasks.isEmpty()) {
+            prioritizedSubtasks.stream()
+                    .filter(subtask -> subtask.getEpicId() == id)
+                    .findFirst()
+                    .ifPresent(subtask -> epic.setStartTime(subtask.getStartTime()));
 
-        // высчитываем конечное время
-        prioritizedSubtasks = prioritizedSubtasks.reversed();
-        prioritizedSubtasks.stream()
-                .filter(subtask -> subtask.getEpicId() == id)
-                .findFirst()
-                .ifPresent(subtask -> epic.setEndTime(subtask.getEndTime()));
+            // высчитываем конечное время
+            prioritizedSubtasks = prioritizedSubtasks.reversed();
+            prioritizedSubtasks.stream()
+                    .filter(subtask -> subtask.getEpicId() == id)
+                    .findFirst()
+                    .ifPresent(subtask -> epic.setEndTime(subtask.getEndTime()));
 
-        // высчитываем продолжительность
-        Duration duration = Duration.ZERO;
-        for (Subtask subtask : getSubtaskIdsFromEpic(epic)) {
-            if (subtask.getDuration() != null) duration = duration.plus(subtask.getDuration());
-        }
+            // высчитываем продолжительность
+            Duration duration = Duration.ZERO;
+            for (Subtask subtask : getSubtasksFromEpic(epic)) {
+                if (subtask.getDuration() != null) duration = duration.plus(subtask.getDuration());
+            }
 
-        if (epic.getStartTime() != null && epic.getEndTime() != null) {
-            epic.setDuration(duration);
+            if (epic.getStartTime() != null && epic.getEndTime() != null) {
+                epic.setDuration(duration);
+            }
         }
     }
 

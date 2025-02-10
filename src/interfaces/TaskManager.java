@@ -52,7 +52,7 @@ public interface TaskManager {
 
     Epic getEpic(int id);
 
-    ArrayList<Subtask> getSubtaskIdsFromEpic(Epic epic);
+    ArrayList<Subtask> getSubtasksFromEpic(Epic epic);
 
     void updateEpic(Epic epic);
 

@@ -5,7 +5,6 @@ import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 
 public class BaseHttpHandler {
 
@@ -24,7 +23,7 @@ public class BaseHttpHandler {
 
     protected void sendResponse(HttpExchange exchange, String json, int code) throws IOException {
         if (code == 200) {
-            if(json!= null && !json.isEmpty()) {
+            if (json != null && !json.isEmpty()) {
                 byte[] resp = json.getBytes(StandardCharsets.UTF_8);
                 exchange.getResponseHeaders().add("Content-Type", "application/json; charset=utf-8");
                 exchange.sendResponseHeaders(code, resp.length);
@@ -63,6 +62,15 @@ public class BaseHttpHandler {
         exchange.close();
     }
 
+    protected void sendWrongPath(HttpExchange exchange) throws IOException {
+        byte[] resp = "Недопустимый путь запроса.".getBytes(StandardCharsets.UTF_8);
+        exchange.getResponseHeaders().add("Content-Type", "text/plain; charset=UTF-8");
+        exchange.getResponseHeaders().add("Allow", "GET, POST, DELETE");
+        exchange.sendResponseHeaders(415, 0);
+        exchange.getResponseBody().write(resp);
+        exchange.close();
+    }
+
     protected void sendHasInteractions(HttpExchange exchange) throws IOException {
         byte[] resp = "Объект пересекается с другим по времени.".getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().add("Content-Type", "text/plain; charset=UTF-8");
@@ -73,6 +81,14 @@ public class BaseHttpHandler {
 
     protected void sendInternalServerError(HttpExchange exchange) throws IOException {
         byte[] resp = "Внутренняя ошибка сервера.".getBytes(StandardCharsets.UTF_8);
+        exchange.getResponseHeaders().add("Content-Type", "text/plain; charset=UTF-8");
+        exchange.sendResponseHeaders(500, 0);
+        exchange.getResponseBody().write(resp);
+        exchange.close();
+    }
+
+    protected void sendJsonSyntaxError(HttpExchange exchange) throws IOException {
+        byte[] resp = "Json файл не распознаётся. \nJson не должен содержать полей exampleField: null ".getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().add("Content-Type", "text/plain; charset=UTF-8");
         exchange.sendResponseHeaders(500, 0);
         exchange.getResponseBody().write(resp);

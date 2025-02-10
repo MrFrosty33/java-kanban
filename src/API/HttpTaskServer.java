@@ -21,8 +21,8 @@ public class HttpTaskServer {
             // чтобы в будущем можно было тут добавить необходимый путь, при надобности
             HashMap<String, HttpHandler> contexts = new HashMap<>();
             contexts.put("/tasks", new TasksHandler(manager));
-            contexts.put("/subtasks", new SubtasksHandler());
-            contexts.put("/epics", new EpicsHandler());
+            contexts.put("/subtasks", new SubtasksHandler(manager));
+            contexts.put("/epics", new EpicsHandler(manager));
             contexts.put("/history", new HistoryHandler(manager));
             contexts.put("/prioritizedTasks", new PrioritizedTasksHandler(manager));
             contexts.put("/prioritizedSubtasks", new PrioritizedSubtasksHandler(manager));

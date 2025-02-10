@@ -37,6 +37,8 @@ public class Main {
     private static void testGetTasksHandler() {
         InMemoryTaskManager manager = new InMemoryTaskManager();
         Task task1, task2, task3;
+        Epic epic1, epic2;
+        Subtask subtask1, subtask2, subtask3;
         LocalDateTime yesterday = LocalDateTime.now().minusDays(1);
         Duration fiveHours = Duration.ofHours(5);
         LocalDateTime now = LocalDateTime.now();
@@ -44,20 +46,36 @@ public class Main {
         task1 = new Task("task1", "id-1", Status.NEW, fiveHours, now);
         task2 = new Task("task2", "id-2", Status.IN_PROGRESS, fiveHours, yesterday);
         task3 = new Task("task3", "id-3", Status.NEW);
+        epic1 = new Epic("epic1", "id-4");
+        epic2 = new Epic("epic2", "id-5");
+        subtask1 = new Subtask("subtask1", "id-6", Status.NEW, 4);
+        subtask2 = new Subtask("subtask2", "id-7", Status.IN_PROGRESS,
+                fiveHours, yesterday.minusMonths(1), 5);
+        subtask3 = new Subtask("subtask2", "id-8", Status.NEW,
+                fiveHours, yesterday.minusYears(1).plusWeeks(1), 5);
+
 
         manager.addTask(task1);
         manager.addTask(task2);
         manager.addTask(task3);
+        manager.addEpic(epic1);
+        manager.addEpic(epic2);
+        manager.addSubtask(subtask1);
+        manager.addSubtask(subtask2);
+        manager.addSubtask(subtask3);
 
         manager.getTask(1);
         manager.getTask(2);
         manager.getTask(3);
+        manager.getEpic(4);
+        manager.getEpic(5);
+        manager.getSubtask(6);
+        manager.getSubtask(7);
+        manager.getSubtask(8);
 
         System.out.println(manager.getHistory().getHistory());
         HttpTaskServer server = new HttpTaskServer(manager);
         server.start();
-
-
     }
 
     private static InMemoryTaskManager getManager() {

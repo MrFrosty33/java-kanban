@@ -30,10 +30,8 @@ public class TasksHandler extends BaseHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        System.out.println("TaskHandler получил запрос");
-
-        // чтобы избавиться от "" на 0 индексе
         String[] path = exchange.getRequestURI().getPath().split("/");
+        // чтобы избавиться от "" на 0 индексе
         path = Arrays.copyOfRange(path, 1, path.length);
 
         Endpoint endpoint = getEndpoint(exchange.getRequestMethod());
@@ -41,7 +39,6 @@ public class TasksHandler extends BaseHttpHandler implements HttpHandler {
                 .registerTypeAdapter(Status.class, new StatusAdapter())
                 .registerTypeAdapter(Duration.class, new DurationAdapter())
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
-                .serializeNulls()
                 .setPrettyPrinting()
                 .create();
 
@@ -52,57 +49,65 @@ public class TasksHandler extends BaseHttpHandler implements HttpHandler {
                         Task task = manager.getTask(Integer.parseInt(path[1]));
                         String taskJson = gson.toJson(task);
                         sendResponse(exchange, taskJson, 200);
-                    } else {
+                    } else if (path.length == 1) {
                         ArrayList<Task> tasks = manager.getAllTasks();
                         String tasksJson = gson.toJson(tasks, new TaskListTypeToken().getType());
                         sendResponse(exchange, tasksJson, 200);
+                    } else {
+                        sendWrongPath(exchange);
                     }
                 } catch (NotFoundException ex) {
                     sendNotFound(exchange);
+                } catch (NumberFormatException e) {
+                    sendWrongPath(exchange);
                 } catch (Throwable e) {
                     sendInternalServerError(exchange);
                 }
                 break;
             case POST:
                 try {
-                    //TODO не работает.
-                    // Сетует на com.google.gson.JsonSyntaxException:
-                    // java.lang.IllegalStateException:
-                    // Expected a string but was NAME at line 7 column 3 path $.startTime
-                    // на данный момент с этим я разобраться не могу
                     String json = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
                     Task task = gson.fromJson(json, Task.class);
-                    System.out.println(task);
 
                     if (path.length == 2) {
                         manager.updateTask(task);
                         sendResponse(exchange, null, 201);
-                    } else {
+                    } else if (path.length == 1) {
                         manager.addTask(task);
                         sendResponse(exchange, null, 201);
+                    } else {
+                        sendWrongPath(exchange);
                     }
                 } catch (ValidateTimeException ex) {
                     sendHasInteractions(exchange);
+                } catch (JsonSyntaxException ex) {
+                    sendJsonSyntaxError(exchange);
+                } catch (NumberFormatException e) {
+                    sendWrongPath(exchange);
                 } catch (Throwable ex) {
                     sendInternalServerError(exchange);
                 }
                 break;
             case DELETE:
-                // Добавил также возможность удалять все задачи, если не указан id удаляемой задачи
-                // добавил код ошибки 404, в случае, если указан id задачи, которой нет в списках
                 try {
                     if (path.length == 2) {
                         // нужно возвращать тот объект, что был удалён?
-                        Task taskToRemove = manager.getTask(Integer.parseInt(path[1]));
+                        //Task taskToRemove = manager.getTask(Integer.parseInt(path[1]));
                         manager.removeTask(Integer.parseInt(path[1]));
                         //String taskJson = gson.toJson(taskToRemove);
                         sendResponse(exchange, null, 200);
-                    } else {
+                    } else if (path.length == 1) {
                         manager.removeAllTasks();
                         sendResponse(exchange, null, 200);
+                    } else {
+                        sendWrongPath(exchange);
                     }
                 } catch (NotFoundException e) {
                     sendNotFound(exchange);
+                } catch (NumberFormatException e) {
+                    sendWrongPath(exchange);
+                } catch (Throwable ex) {
+                    sendInternalServerError(exchange);
                 }
                 break;
             default:

@@ -10,7 +10,7 @@ import java.io.IOException;
 public class StatusAdapter extends TypeAdapter<Status> {
     @Override
     public void write(JsonWriter jsonWriter, Status status) throws IOException {
-        switch (status){
+        switch (status) {
             case NEW:
                 jsonWriter.value("NEW");
                 break;
@@ -26,7 +26,7 @@ public class StatusAdapter extends TypeAdapter<Status> {
     @Override
     public Status read(JsonReader jsonReader) throws IOException {
         String status = jsonReader.nextString();
-        switch (status){
+        switch (status) {
             case "NEW":
                 return Status.NEW;
             case "IN_PROGRESS":
