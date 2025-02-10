@@ -5,5 +5,6 @@ public class ValidateTimeException extends RuntimeException {
         super(message);
     }
 
-  public ValidateTimeException(){}
+    public ValidateTimeException() {
+    }
 }

@@ -32,8 +32,6 @@ public class HttpTaskServer {
                     .forEach(entry -> httpServer.createContext(entry.getKey(), entry.getValue()));
 
             httpServer.start();
-            System.out.println("Сервер запущен.");
-            //TODO обработка исключений
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
