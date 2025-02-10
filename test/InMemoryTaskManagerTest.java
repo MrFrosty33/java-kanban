@@ -3,9 +3,9 @@ import models.Epic;
 import models.Status;
 import models.Subtask;
 import models.Task;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
