@@ -23,8 +23,9 @@ public class HttpTaskServer {
             contexts.put("/tasks", new TasksHandler(manager));
             contexts.put("/subtasks", new SubtasksHandler());
             contexts.put("/epics", new EpicsHandler());
-            contexts.put("/history", new HistoryHandler());
-            contexts.put("/prioritized", new PrioritizedHandler());
+            contexts.put("/history", new HistoryHandler(manager));
+            contexts.put("/prioritizedTasks", new PrioritizedTasksHandler(manager));
+            contexts.put("/prioritizedSubtasks", new PrioritizedSubtasksHandler(manager));
 
             httpServer = HttpServer.create(new InetSocketAddress(8080), 0);
             contexts.entrySet().stream()

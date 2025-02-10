@@ -53,21 +53,10 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$USER_HOME$/Downloads/gson-2.9.0.jar!/" />
+          <root url="jar://$APPLICATION_HOME_DIR$/lib/gson-2_9_0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$APPLICATION_HOME_DIR$/lib/gson-2_9_0.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES>
-          <root url="jar://$APPLICATION_HOME_DIR$/lib/gson-2_9_0.jar!/" />
-        </SOURCES>
       </library>
     </orderEntry>
   </component>

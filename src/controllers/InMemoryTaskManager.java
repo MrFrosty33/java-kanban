@@ -50,7 +50,10 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public ArrayList<Task> getAllTasks() {
+    public ArrayList<Task> getAllTasks() throws NotFoundException {
+        // стоит ли в таких методах выбрасывать исключение?
+        // пока сделал с ним
+        if (tasks.isEmpty()) throw new NotFoundException();
         return new ArrayList<>(tasks.values());
     }
 
@@ -79,18 +82,18 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void removeTask(int id) {
+    public void removeTask(int id) throws NotFoundException {
         final Task task = tasks.remove(id);
-        if (task == null) {
-            return;
-        }
+        if (task == null) throw new NotFoundException();
+
         historyManager.remove(id);
         tasks.remove(id);
-        prioritizedTasks.remove(tasks.get(id));
+        prioritizedTasks.remove(task);
     }
 
     @Override
     public void removeAllTasks() {
+        // если список уже пуст, стоит ли отправлять NotFoundException?
         for (Task task : tasks.values()) {
             historyManager.remove(task.getId());
         }
@@ -116,7 +119,8 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public ArrayList<Subtask> getAllSubtasks() {
+    public ArrayList<Subtask> getAllSubtasks() throws NotFoundException {
+        if (subtasks.isEmpty()) throw new NotFoundException();
         return new ArrayList<>(subtasks.values());
     }
 
@@ -137,7 +141,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void updateSubtask(Subtask subtask) {
+    public void updateSubtask(Subtask subtask) throws ValidateTimeException {
         if (validateTime(subtask)) throw new ValidateTimeException();
 
         prioritizedSubtasks.remove(subtasks.get(subtask.getId()));
@@ -148,11 +152,10 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void removeSubtask(int id) {
+    public void removeSubtask(int id) throws NotFoundException {
         final Subtask subtask = subtasks.remove(id);
-        if (subtask == null) {
-            return;
-        }
+        if (subtask == null) throw new NotFoundException();
+
         Epic epic = epics.get(subtask.getEpicId());
         epic.subtasks.remove(id);
         prioritizedSubtasks.remove(subtasks.get(id));
@@ -184,7 +187,8 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public ArrayList<Epic> getAllEpics() {
+    public ArrayList<Epic> getAllEpics() throws NotFoundException {
+        if (epics.isEmpty()) throw new NotFoundException();
         return new ArrayList<>(epics.values());
     }
 
@@ -220,11 +224,9 @@ public class InMemoryTaskManager implements TaskManager {
 
 
     @Override
-    public void removeEpic(int id) {
+    public void removeEpic(int id) throws NotFoundException {
         final Epic epicToRemove = epics.remove(id);
-        if (epicToRemove == null) {
-            return;
-        }
+        if (epicToRemove == null) throw new NotFoundException();
 
         epicToRemove.getSubtaskIds().stream()
                 .map(subtask -> subtasks.remove(subtask))
