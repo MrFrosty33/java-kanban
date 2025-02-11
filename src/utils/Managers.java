@@ -1,8 +1,8 @@
 package utils;
 
+import controllers.InMemoryHistoryManager;
 import controllers.InMemoryTaskManager;
 import interfaces.HistoryManager;
-import controllers.InMemoryHistoryManager;
 import interfaces.TaskManager;
 
 public abstract class Managers {

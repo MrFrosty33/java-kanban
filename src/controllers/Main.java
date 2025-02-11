@@ -1,8 +1,12 @@
 package controllers;
 
+import api.HttpTaskServer;
+import interfaces.TaskManager;
 import models.Epic;
 import models.Status;
 import models.Subtask;
+import models.Task;
+import utils.Managers;
 
 import java.io.File;
 import java.time.Duration;
@@ -13,25 +17,70 @@ public class Main {
     private static final File path = new File("src/resources/sprint7.csv");
 
     public static void main(String[] args) {
-        testLoadAndSave();
+        //testLoadAndSave();
         //testSave(new File("src/resources/test.csv"));
 
 
         /*
-        InMemoryTaskManager manager = getManager();
+        TaskManager manager = getManager();
         ArrayList<Subtask> subtasks = manager.getPrioritizedSubtasks();
         //ArrayList<Epic> epics = manager.getPrioritizedEpics();
         for (Subtask subtask : subtasks) {
             System.out.println(subtask);
         }
-
          */
+
+        testGetTasksHandler();
 
 
     }
 
-    private static InMemoryTaskManager getManager() {
-        InMemoryTaskManager manager = new InMemoryTaskManager();
+    private static void testGetTasksHandler() {
+        TaskManager manager = Managers.getDefault();
+        Task task1, task2, task3;
+        Epic epic1, epic2;
+        Subtask subtask1, subtask2, subtask3;
+        LocalDateTime yesterday = LocalDateTime.now().minusDays(1);
+        Duration fiveHours = Duration.ofHours(5);
+        LocalDateTime now = LocalDateTime.now();
+
+        task1 = new Task("task1", "id-1", Status.NEW, fiveHours, now);
+        task2 = new Task("task2", "id-2", Status.IN_PROGRESS, fiveHours, yesterday);
+        task3 = new Task("task3", "id-3", Status.NEW);
+        epic1 = new Epic("epic1", "id-4");
+        epic2 = new Epic("epic2", "id-5");
+        subtask1 = new Subtask("subtask1", "id-6", Status.NEW, 4);
+        subtask2 = new Subtask("subtask2", "id-7", Status.IN_PROGRESS,
+                fiveHours, yesterday.minusMonths(1), 5);
+        subtask3 = new Subtask("subtask2", "id-8", Status.NEW,
+                fiveHours, yesterday.minusYears(1).plusWeeks(1), 5);
+
+
+        manager.addTask(task1);
+        manager.addTask(task2);
+        manager.addTask(task3);
+        manager.addEpic(epic1);
+        manager.addEpic(epic2);
+        manager.addSubtask(subtask1);
+        manager.addSubtask(subtask2);
+        manager.addSubtask(subtask3);
+
+        manager.getTask(1);
+        manager.getTask(2);
+        manager.getTask(3);
+        manager.getEpic(4);
+        manager.getEpic(5);
+        manager.getSubtask(6);
+        manager.getSubtask(7);
+        manager.getSubtask(8);
+
+        System.out.println(manager.getHistory().getHistory());
+        HttpTaskServer server = new HttpTaskServer(manager);
+        server.start();
+    }
+
+    private static TaskManager getManager() {
+        TaskManager manager = Managers.getDefault();
         Epic epicEmpty, epicWithThreeSubtasks, epicNoTime;
         Subtask subtask1, subtask2, subtask3, subtask4;
         Duration hourThirtyMinutes = Duration.ofHours(1).plusMinutes(30);
@@ -70,22 +119,22 @@ public class Main {
     }
 
     private static void testSave() {
-        InMemoryTaskManager manager = getManager();
+        TaskManager manager = getManager();
         FileBackedTaskManager fileManager = new FileBackedTaskManager(path, manager);
         fileManager.save();
     }
 
     private static void testSave(File path) {
-        InMemoryTaskManager manager = getManager();
+        TaskManager manager = getManager();
         FileBackedTaskManager fileManager = new FileBackedTaskManager(path, manager);
         fileManager.save();
     }
 
     private static void testLoadAndSave() {
-        InMemoryTaskManager manager;
+        TaskManager manager;
 
         if (path.isFile() && path.exists()) {
-            manager = FileBackedTaskManager.loadFromFile(path, new InMemoryTaskManager());
+            manager = FileBackedTaskManager.loadFromFile(path, Managers.getDefault());
             System.out.println("Прошла загрузка из файла: " + manager.toString());
         } else {
             manager = getManager();
