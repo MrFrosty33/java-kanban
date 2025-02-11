@@ -8,8 +8,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import controllers.InMemoryTaskManager;
 import interfaces.HistoryManager;
+import interfaces.TaskManager;
 import models.Status;
 
 import java.io.IOException;
@@ -18,9 +18,9 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 
 public class HistoryHandler extends BaseHttpHandler implements HttpHandler {
-    private InMemoryTaskManager manager;
+    private TaskManager manager;
 
-    public HistoryHandler(InMemoryTaskManager manager) {
+    public HistoryHandler(TaskManager manager) {
         this.manager = manager;
     }
 

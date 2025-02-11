@@ -1,12 +1,26 @@
 package api.handlers;
 
 import api.Endpoint;
+import api.adapters.DurationAdapter;
+import api.adapters.LocalDateTimeAdapter;
+import api.adapters.StatusAdapter;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpExchange;
+import models.Status;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 public class BaseHttpHandler {
+    protected Gson gson = new GsonBuilder()
+            .registerTypeAdapter(Status.class, new StatusAdapter())
+            .registerTypeAdapter(Duration.class, new DurationAdapter())
+            .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+            .setPrettyPrinting()
+            .create();
 
     protected Endpoint getEndpoint(String requestMethod) {
         switch (requestMethod) {
@@ -17,7 +31,7 @@ public class BaseHttpHandler {
             case "DELETE":
                 return Endpoint.DELETE;
             default:
-                return null;
+                return Endpoint.WRONG;
         }
     }
 

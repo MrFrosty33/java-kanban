@@ -57,6 +57,7 @@ public class InMemoryTaskManager implements TaskManager {
         return new ArrayList<>(tasks.values());
     }
 
+    @Override
     public ArrayList<Task> getPrioritizedTasks() {
         return new ArrayList<>(prioritizedTasks);
     }
@@ -127,6 +128,7 @@ public class InMemoryTaskManager implements TaskManager {
         return new ArrayList<>(subtasks.values());
     }
 
+    @Override
     public ArrayList<Subtask> getPrioritizedSubtasks() {
         return new ArrayList<>(prioritizedSubtasks);
     }
@@ -260,7 +262,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateEpicStatus(int id) {
         Epic epic = epics.get(id);
-        if (epic.getSubtaskIds() == null) {
+        if (epic.getSubtaskIds() == null || epic.getSubtaskIds().isEmpty()) {
             epic.setStatus(Status.NEW);
         } else {
             Set<Integer> subtasksidSet = new HashSet<>(epic.getSubtaskIds());
@@ -294,7 +296,7 @@ public class InMemoryTaskManager implements TaskManager {
         Epic epic = epics.get(id);
         List<Subtask> prioritizedSubtasks = getPrioritizedSubtasks();
 
-        if (epic.getSubtaskIds() != null && !prioritizedSubtasks.isEmpty()) {
+        if (epic.getSubtaskIds() != null && !epic.getSubtaskIds().isEmpty() && !prioritizedSubtasks.isEmpty()) {
             prioritizedSubtasks.stream()
                     .filter(subtask -> subtask.getEpicId() == id)
                     .findFirst()

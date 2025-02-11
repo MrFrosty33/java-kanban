@@ -1,6 +1,6 @@
 package api;
 
 public enum Endpoint {
-    GET, POST, DELETE;
+    GET, POST, DELETE, WRONG;
 
 }

@@ -3,16 +3,16 @@ package api;
 import api.handlers.*;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import controllers.InMemoryTaskManager;
+import interfaces.TaskManager;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 
 public class HttpTaskServer {
     private HttpServer httpServer;
-    private InMemoryTaskManager manager;
+    private TaskManager manager;
 
-    public HttpTaskServer(InMemoryTaskManager manager) {
+    public HttpTaskServer(TaskManager manager) {
         this.manager = manager;
     }
 
@@ -32,7 +32,7 @@ public class HttpTaskServer {
                     .forEach(entry -> httpServer.createContext(entry.getKey(), entry.getValue()));
 
             httpServer.start();
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

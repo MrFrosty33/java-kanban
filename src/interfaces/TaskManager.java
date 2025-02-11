@@ -18,6 +18,8 @@ public interface TaskManager {
 
     ArrayList<Task> getAllTasks();
 
+    ArrayList<Task> getPrioritizedTasks();
+
     Task getTask(int id);
 
     void updateTask(Task task);
@@ -33,6 +35,8 @@ public interface TaskManager {
     void addSubtask(Subtask subtask);
 
     ArrayList<Subtask> getAllSubtasks();
+
+    ArrayList<Subtask> getPrioritizedSubtasks();
 
     Subtask getSubtask(int id);
 

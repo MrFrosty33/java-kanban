@@ -52,4 +52,15 @@ public class DurationAdapter extends TypeAdapter<Duration> {
 
         return duration;
     }
+
+    /*@Override
+    public void write(final JsonWriter jsonWriter, final Duration duration) throws IOException {
+        jsonWriter.value(duration.toMinutes());
+    }
+
+    @Override
+    public Duration read(final JsonReader jsonReader) throws IOException {
+        return Duration.ofMinutes(jsonReader.nextInt());
+    }*/
+
 }

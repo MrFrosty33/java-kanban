@@ -9,7 +9,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import controllers.InMemoryTaskManager;
+import interfaces.TaskManager;
 import models.Status;
 import models.Task;
 
@@ -20,9 +20,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class PrioritizedTasksHandler extends BaseHttpHandler implements HttpHandler {
-    private InMemoryTaskManager manager;
+    private TaskManager manager;
 
-    public PrioritizedTasksHandler(InMemoryTaskManager manager) {
+    public PrioritizedTasksHandler(TaskManager manager) {
         this.manager = manager;
     }
 

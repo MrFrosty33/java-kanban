@@ -1,10 +1,12 @@
 package controllers;
 
 import api.HttpTaskServer;
+import interfaces.TaskManager;
 import models.Epic;
 import models.Status;
 import models.Subtask;
 import models.Task;
+import utils.Managers;
 
 import java.io.File;
 import java.time.Duration;
@@ -20,7 +22,7 @@ public class Main {
 
 
         /*
-        InMemoryTaskManager manager = getManager();
+        TaskManager manager = getManager();
         ArrayList<Subtask> subtasks = manager.getPrioritizedSubtasks();
         //ArrayList<Epic> epics = manager.getPrioritizedEpics();
         for (Subtask subtask : subtasks) {
@@ -34,7 +36,7 @@ public class Main {
     }
 
     private static void testGetTasksHandler() {
-        InMemoryTaskManager manager = new InMemoryTaskManager();
+        TaskManager manager = Managers.getDefault();
         Task task1, task2, task3;
         Epic epic1, epic2;
         Subtask subtask1, subtask2, subtask3;
@@ -77,8 +79,8 @@ public class Main {
         server.start();
     }
 
-    private static InMemoryTaskManager getManager() {
-        InMemoryTaskManager manager = new InMemoryTaskManager();
+    private static TaskManager getManager() {
+        TaskManager manager = Managers.getDefault();
         Epic epicEmpty, epicWithThreeSubtasks, epicNoTime;
         Subtask subtask1, subtask2, subtask3, subtask4;
         Duration hourThirtyMinutes = Duration.ofHours(1).plusMinutes(30);
@@ -117,22 +119,22 @@ public class Main {
     }
 
     private static void testSave() {
-        InMemoryTaskManager manager = getManager();
+        TaskManager manager = getManager();
         FileBackedTaskManager fileManager = new FileBackedTaskManager(path, manager);
         fileManager.save();
     }
 
     private static void testSave(File path) {
-        InMemoryTaskManager manager = getManager();
+        TaskManager manager = getManager();
         FileBackedTaskManager fileManager = new FileBackedTaskManager(path, manager);
         fileManager.save();
     }
 
     private static void testLoadAndSave() {
-        InMemoryTaskManager manager;
+        TaskManager manager;
 
         if (path.isFile() && path.exists()) {
-            manager = FileBackedTaskManager.loadFromFile(path, new InMemoryTaskManager());
+            manager = FileBackedTaskManager.loadFromFile(path, Managers.getDefault());
             System.out.println("Прошла загрузка из файла: " + manager.toString());
         } else {
             manager = getManager();

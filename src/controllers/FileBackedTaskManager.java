@@ -2,6 +2,7 @@ package controllers;
 
 import exceptions.ManagerSaveException;
 import interfaces.HistoryManager;
+import interfaces.TaskManager;
 import models.Epic;
 import models.Status;
 import models.Subtask;
@@ -21,9 +22,9 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     private File myFile;
     private HistoryManager history;
-    private InMemoryTaskManager manager;
+    private TaskManager manager;
 
-    public FileBackedTaskManager(File myFile, InMemoryTaskManager manager) {
+    public FileBackedTaskManager(File myFile, TaskManager manager) {
         this.myFile = myFile;
         this.manager = manager;
         this.history = manager.getHistory();
@@ -41,7 +42,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         Path copyPath = Path.of(copy.toString());
         try {
             Files.copy(file.toPath(), copyPath, StandardCopyOption.REPLACE_EXISTING);
-        } catch (Throwable ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
         return copyPath.toFile();
@@ -62,7 +63,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
     }
 
-    public static FileBackedTaskManager loadFromFile(File file, InMemoryTaskManager manager) {
+    public static FileBackedTaskManager loadFromFile(File file, TaskManager manager) {
         // Делаю копию, потому что во время чтения файла пропадает вся информация из него.
         // Таким образом на данный момент пропадают данные из копии, а файл копии в конце удаляю
         File fileCopy = copyFile(file);

@@ -1,32 +1,24 @@
 package api.handlers;
 
 import api.Endpoint;
-import api.adapters.DurationAdapter;
-import api.adapters.LocalDateTimeAdapter;
-import api.adapters.StatusAdapter;
 import api.adapters.SubtaskListTypeToken;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import controllers.InMemoryTaskManager;
 import exceptions.NotFoundException;
 import exceptions.ValidateTimeException;
-import models.Status;
+import interfaces.TaskManager;
 import models.Subtask;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
-    private InMemoryTaskManager manager;
+    private TaskManager manager;
 
-    public SubtasksHandler(InMemoryTaskManager manager) {
+    public SubtasksHandler(TaskManager manager) {
         this.manager = manager;
     }
 
@@ -37,12 +29,6 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
         path = Arrays.copyOfRange(path, 1, path.length);
 
         Endpoint endpoint = getEndpoint(exchange.getRequestMethod());
-        Gson gson = new GsonBuilder()
-                .registerTypeAdapter(Status.class, new StatusAdapter())
-                .registerTypeAdapter(Duration.class, new DurationAdapter())
-                .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
-                .setPrettyPrinting()
-                .create();
 
         switch (endpoint) {
             case GET:
@@ -62,7 +48,7 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
                     sendNotFound(exchange);
                 } catch (NumberFormatException e) {
                     sendWrongPath(exchange);
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     sendInternalServerError(exchange);
                 }
                 break;
@@ -86,17 +72,14 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
                     sendJsonSyntaxError(exchange);
                 } catch (NumberFormatException e) {
                     sendWrongPath(exchange);
-                } catch (Throwable ex) {
+                } catch (Exception ex) {
                     sendInternalServerError(exchange);
                 }
                 break;
             case DELETE:
                 try {
                     if (path.length == 2) {
-                        // нужно возвращать тот объект, что был удалён?
-                        // Subtask subtaskToRemove = manager.getSubtask(Integer.parseInt(path[1]));
                         manager.removeSubtask(Integer.parseInt(path[1]));
-                        // String subtaskToRemove = gson.toJson(subtaskToRemove);
                         sendResponse(exchange, null, 200);
                     } else if (path.length == 1) {
                         manager.removeAllSubtasks();
@@ -108,7 +91,7 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
                     sendNotFound(exchange);
                 } catch (NumberFormatException e) {
                     sendWrongPath(exchange);
-                } catch (Throwable ex) {
+                } catch (Exception ex) {
                     sendInternalServerError(exchange);
                 }
                 break;
