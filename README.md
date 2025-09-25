@@ -14,20 +14,6 @@ The project demonstrates core Java principles, object-oriented design, and the i
 
 ---
 
-## Project Structure
-
-- `api/` — Contains classes responsible for handling HTTP requests and responses.
-- `comparators/` — Classes that implement the Comparator interface to define custom sorting logic for various objects within the application.
-- `controllers/` — Manages the application's business logic and acts as an intermediary between the view and the model, processing user inputs and updating the model accordingly.
-- `exceptions/` — Defines custom exceptions and handles error scenarios, ensuring the application can manage and respond to unexpected situations.
-- `interfaces/` — Contains interfaces that define the contract for various services or components.
-- `models/` — Represents the data structures within the application.
-- `resources/` — Stores non-code files such as files for save & download.
-- `utils/` — Includes utility classes that provide common functions or helper methods.
-- `validators/` — Classes responsible for validating input data, ensuring that it meets the required criteria before being processed by the application.
-
----
-
 ## Features
 
 - CRUD operations:
@@ -39,3 +25,17 @@ The project demonstrates core Java principles, object-oriented design, and the i
 - Access and manage task history (recently viewed tasks)
 - Prioritized task list by start time
 - State persistence using file-based storage
+
+---
+
+## Project Structure
+
+- `api/` — Contains classes responsible for handling HTTP requests and responses.
+- `comparators/` — Classes that implement the Comparator interface to define custom sorting logic for various objects within the application.
+- `controllers/` — Manages the application's business logic and acts as an intermediary between the view and the model, processing user inputs and updating the model accordingly.
+- `exceptions/` — Defines custom exceptions and handles error scenarios, ensuring the application can manage and respond to unexpected situations.
+- `interfaces/` — Contains interfaces that define the contract for various services or components.
+- `models/` — Represents the data structures within the application.
+- `resources/` — Stores non-code files such as files for save & download.
+- `utils/` — Includes utility classes that provide common functions or helper methods.
+- `validators/` — Classes responsible for validating input data, ensuring that it meets the required criteria before being processed by the application.
